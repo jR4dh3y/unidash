@@ -1,4 +1,4 @@
-import { students } from "@/lib/data";
+import { getAllStudents, getStudentById } from "@/lib/firebase-service";
 import { notFound } from "next/navigation";
 import { StudentProfile } from "@/components/student-profile";
 import Link from 'next/link';
@@ -12,14 +12,14 @@ interface StudentPageProps {
 }
 
 export default async function StudentPage({ params }: StudentPageProps) {
-  const student = students.find((s) => s.id === params.id);
+  const student = await getStudentById(params.id);
 
   if (!student) {
     notFound();
   }
 
   // Calculate rank
-  const sortedStudents = [...students].sort((a, b) => b.totalPoints - a.totalPoints);
+  const sortedStudents = await getAllStudents();
   const rank = sortedStudents.findIndex(s => s.id === student.id) + 1;
 
   return (
@@ -49,6 +49,7 @@ export default async function StudentPage({ params }: StudentPageProps) {
 
 // Generate static paths for all students
 export async function generateStaticParams() {
+  const students = await getAllStudents();
   return students.map((student) => ({
     id: student.id,
   }));

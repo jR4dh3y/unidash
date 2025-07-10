@@ -1,12 +1,10 @@
 import { Leaderboard } from "@/components/leaderboard";
-import { students } from "@/lib/data";
+import { getAllStudents } from "@/lib/firebase-service";
 import type { Student } from "@/lib/types";
 import { Medal } from "lucide-react";
 
-export default function Home() {
-  const sortedStudents: Student[] = [...students].sort(
-    (a, b) => b.totalPoints - a.totalPoints
-  );
+export default async function Home() {
+  const sortedStudents: Student[] = await getAllStudents();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
