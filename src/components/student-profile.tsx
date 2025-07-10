@@ -90,7 +90,7 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
               <TableBody>
                 {sortedPointsLog.map((log, index) => (
                   <TableRow key={log.id || index}>
-                    <TableCell className="text-muted-foreground whitespace-nowrap">{log.date}</TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">{new Date(log.date).toLocaleDateString()}</TableCell>
                     <TableCell className="font-medium">{log.description}</TableCell>
                     <TableCell>
                         <div className="flex items-center gap-2">
