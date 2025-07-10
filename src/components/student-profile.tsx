@@ -27,6 +27,10 @@ const sourceIcons: Record<Student['pointsLog'][number]['source'], React.ReactNod
 }
 
 export function StudentProfile({ student, rank }: StudentProfileProps) {
+  const sortedPointsLog = student.pointsLog 
+    ? [...student.pointsLog].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    : [];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-1">
@@ -48,16 +52,20 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
                 <div className="font-semibold text-lg text-foreground">Rank #{rank}</div>
             </div>
             <div className="flex gap-4">
-                <Button asChild variant="ghost" size="icon">
-                    <Link href={student.github} target="_blank" rel="noopener noreferrer" aria-label={`${student.name}'s Github Profile`}>
-                        <Github className="h-5 w-5" />
-                    </Link>
-                </Button>
-                <Button asChild variant="ghost" size="icon">
-                    <Link href={student.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${student.name}'s LinkedIn Profile`}>
-                        <Linkedin className="h-5 w-5" />
-                    </Link>
-                </Button>
+                {student.github && (
+                  <Button asChild variant="ghost" size="icon">
+                      <Link href={student.github} target="_blank" rel="noopener noreferrer" aria-label={`${student.name}'s Github Profile`}>
+                          <Github className="h-5 w-5" />
+                      </Link>
+                  </Button>
+                )}
+                {student.linkedin && (
+                  <Button asChild variant="ghost" size="icon">
+                      <Link href={student.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${student.name}'s LinkedIn Profile`}>
+                          <Linkedin className="h-5 w-5" />
+                      </Link>
+                  </Button>
+                )}
             </div>
           </CardContent>
         </Card>
@@ -80,13 +88,13 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {student.pointsLog.map((log) => (
-                  <TableRow key={log.id}>
+                {sortedPointsLog.map((log, index) => (
+                  <TableRow key={log.id || index}>
                     <TableCell className="text-muted-foreground whitespace-nowrap">{log.date}</TableCell>
                     <TableCell className="font-medium">{log.description}</TableCell>
                     <TableCell>
                         <div className="flex items-center gap-2">
-                            {sourceIcons[log.source]}
+                            {log.source && sourceIcons[log.source]}
                             <span className="hidden sm:inline">{log.source}</span>
                         </div>
                     </TableCell>
@@ -99,6 +107,11 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
                 ))}
               </TableBody>
             </Table>
+             {sortedPointsLog.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                    <p>No point history found.</p>
+                </div>
+            )}
           </CardContent>
         </Card>
       </div>
