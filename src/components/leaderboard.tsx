@@ -40,7 +40,7 @@ export function Leaderboard({ students }: LeaderboardProps) {
   };
 
   return (
-    <Card className="shadow-lg border-none">
+    <Card className="shadow-lg border-none dark:bg-gray-800">
       <CardHeader>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <CardTitle className="text-2xl font-headline">Student Leaderboard</CardTitle>

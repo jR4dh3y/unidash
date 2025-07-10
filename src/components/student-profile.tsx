@@ -34,7 +34,7 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-1">
-        <Card className="shadow-lg border-none sticky top-8">
+        <Card className="shadow-lg border-none sticky top-8 dark:bg-gray-800">
           <CardContent className="pt-6 flex flex-col items-center text-center">
             <Avatar className="w-32 h-32 mb-4 border-4 border-primary/20">
               <AvatarImage src={student.avatar} alt={student.name} data-ai-hint="person portrait" />
@@ -72,7 +72,7 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
       </div>
 
       <div className="lg:col-span-2">
-        <Card className="shadow-lg border-none">
+        <Card className="shadow-lg border-none dark:bg-gray-800">
           <CardHeader>
             <CardTitle>Point History</CardTitle>
             <CardDescription>A log of all points earned.</CardDescription>
@@ -99,7 +99,7 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
                         </div>
                     </TableCell>
                     <TableCell className="text-right">
-                        <Badge variant="secondary" className="bg-accent/20 text-accent-foreground hover:bg-accent/30">
+                        <Badge variant="secondary" className="bg-accent/20 text-accent-foreground hover:bg-accent/30 dark:text-white">
                             {log.points > 0 ? '+' : ''}{log.points}
                         </Badge>
                     </TableCell>

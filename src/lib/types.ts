@@ -15,3 +15,12 @@ export interface Student {
   totalPoints: number;
   pointsLog: PointLog[];
 }
+
+export interface AppEvent {
+  id: string;
+  title: string;
+  date: string; // ISO string format
+  description: string;
+  location?: string;
+  link?: string;
+}

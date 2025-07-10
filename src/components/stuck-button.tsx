@@ -16,6 +16,8 @@ import { HelpCircle, Bot, Loader2, Send } from 'lucide-react';
 import { studentCoach } from '@/ai/flows/student-coach';
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+
 
 interface Message {
   role: 'user' | 'model';
