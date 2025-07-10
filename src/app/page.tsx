@@ -1,3 +1,26 @@
+import { Leaderboard } from "@/components/leaderboard";
+import { students } from "@/lib/data";
+import type { Student } from "@/lib/types";
+import { Medal } from "lucide-react";
+
 export default function Home() {
-  return <></>;
+  const sortedStudents: Student[] = [...students].sort(
+    (a, b) => b.totalPoints - a.totalPoints
+  );
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="py-6 px-4 md:px-8">
+        <div className="container mx-auto flex items-center gap-3">
+          <Medal className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold font-headline tracking-tight text-gray-800">
+            Nexus Academicus
+          </h1>
+        </div>
+      </header>
+      <main className="container mx-auto px-4 md:px-8 pb-12">
+        <Leaderboard students={sortedStudents} />
+      </main>
+    </div>
+  );
 }
