@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from './firebase-config';
-import { collection, getDocs, doc, getDoc, query, orderBy, where, limit } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp } from 'firebase/firestore';
 import type { Student, AppEvent } from './types';
 
 export async function getAllStudents(): Promise<Student[]> {
@@ -15,7 +15,21 @@ export async function getAllStudents(): Promise<Student[]> {
       return [];
     }
 
-    const studentList = studentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
+    const studentList = studentSnapshot.docs.map(doc => {
+        const data = doc.data();
+        const pointsLog = data.pointsLog ? data.pointsLog.map((log: any) => ({
+            ...log,
+            // Convert Firestore Timestamp to ISO string if it exists
+            date: log.date instanceof Timestamp ? log.date.toDate().toISOString() : log.date,
+        })) : [];
+
+        return { 
+            id: doc.id, 
+            ...data,
+            pointsLog,
+        } as Student;
+    });
+
     return studentList;
   } catch (error) {
     console.error("Error fetching students from Firestore:", error);
@@ -33,7 +47,7 @@ export async function getStudentById(id: string): Promise<Student | null> {
       const studentData = studentSnap.data();
       const pointsLog = studentData.pointsLog ? studentData.pointsLog.map((log: any) => ({
         ...log,
-        date: new Date(log.date).toISOString(),
+        date: log.date instanceof Timestamp ? log.date.toDate().toISOString() : log.date,
       })) : [];
 
       return { 
@@ -54,7 +68,7 @@ export async function getStudentById(id: string): Promise<Student | null> {
 export async function getUpcomingEvents(): Promise<AppEvent[]> {
   try {
     const eventsCollection = collection(db, 'events');
-    const today = new Date().toISOString();
+    const today = new Date();
     const q = query(
       eventsCollection, 
       where('date', '>=', today), 
@@ -68,7 +82,15 @@ export async function getUpcomingEvents(): Promise<AppEvent[]> {
       return [];
     }
 
-    const eventList = eventSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppEvent));
+    const eventList = eventSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return { 
+            id: doc.id, 
+            ...data,
+            // Convert Firestore Timestamp to ISO string
+            date: data.date instanceof Timestamp ? data.date.toDate().toISOString() : data.date,
+        } as AppEvent
+    });
     return eventList;
   } catch (error) {
     console.error("Error fetching events from Firestore:", error);
