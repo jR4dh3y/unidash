@@ -1,17 +1,53 @@
 
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Leaderboard } from "@/components/leaderboard";
 import { getAllStudents, getUpcomingEvents } from "@/lib/firebase-service";
-import type { Student, AppEvent } from "@/lib/types";
-import { Calendar, MapPin, ExternalLink, Code } from "lucide-react";
+import type { Student, AppEvent, LeetCodeDailyProblem } from "@/lib/types";
+import { Calendar, MapPin, ExternalLink, Code, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { format } from "date-fns";
 import { getDailyProblem } from "@/lib/leetcode";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from '@/components/ui/skeleton';
 
-async function UpcomingEvents() {
-  const events: AppEvent[] = await getUpcomingEvents();
+function UpcomingEvents() {
+  const [events, setEvents] = useState<AppEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const eventData = await getUpcomingEvents();
+        setEvents(eventData);
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchEvents();
+  }, []);
+
+  if (loading) {
+    return (
+       <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-headline flex items-center gap-2">
+            <Calendar className="h-6 w-6 text-primary" />
+            Upcoming Events
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+        </CardContent>
+      </Card>
+    )
+  }
 
   if (events.length === 0) {
     return (
@@ -82,8 +118,41 @@ async function UpcomingEvents() {
   );
 }
 
-async function LeetCodeCard() {
-    const dailyProblem = await getDailyProblem();
+function LeetCodeCard() {
+    const [dailyProblem, setDailyProblem] = useState<LeetCodeDailyProblem | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchProblem() {
+            try {
+                const problem = await getDailyProblem();
+                setDailyProblem(problem);
+            } catch (error) {
+                console.error("Failed to fetch LeetCode problem:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchProblem();
+    }, []);
+
+    if (loading) {
+        return (
+            <Card className="flex flex-col h-full">
+                <CardHeader>
+                    <CardTitle className="text-2xl font-headline flex items-center gap-2">
+                        <Code className="h-6 w-6 text-primary" />
+                        Today's LeetCode Problem
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col flex-grow items-center justify-center">
+                    <Skeleton className="h-8 w-3/4 mb-4" />
+                    <Skeleton className="h-6 w-1/4" />
+                    <Skeleton className="h-10 w-full mt-6" />
+                </CardContent>
+            </Card>
+        )
+    }
 
     if (!dailyProblem) {
         return (
@@ -136,16 +205,53 @@ async function LeetCodeCard() {
     );
 }
 
+function MainLeaderboard() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function Home() {
-  const sortedStudents: Student[] = await getAllStudents();
+  useEffect(() => {
+    async function fetchStudents() {
+      try {
+        const studentData = await getAllStudents();
+        setStudents(studentData);
+      } catch (error) {
+        console.error("Failed to fetch students:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStudents();
+  }, []);
 
+  if (loading) {
+     return (
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-8 w-1/3" />
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                </div>
+            </CardContent>
+        </Card>
+     )
+  }
+
+  return <Leaderboard students={students} />;
+}
+
+export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main className="container mx-auto px-4 md:px-8 pb-12 pt-8">
         <div className="flex flex-col gap-8">
           <div>
-            <Leaderboard students={sortedStudents} />
+            <MainLeaderboard />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">

@@ -1,12 +1,15 @@
 
+'use client';
+
+import { useEffect, useState } from 'react';
 import { getStudentById, getAllStudents } from "@/lib/firebase-service";
 import { notFound } from "next/navigation";
 import { StudentProfile } from "@/components/student-profile";
 import Link from 'next/link';
-import { ArrowLeft, Medal } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AuthWidget } from "@/components/auth-widget";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { useAuth } from "@/components/auth-provider";
+import type { Student } from '@/lib/types';
 
 interface StudentPageProps {
   params: {
@@ -14,17 +17,50 @@ interface StudentPageProps {
   };
 }
 
-export default async function StudentPage({ params }: StudentPageProps) {
-  const student = await getStudentById(params.id);
-  const user = await getAuthenticatedUser();
+export default function StudentPage({ params }: StudentPageProps) {
+  const { user } = useAuth();
+  const [student, setStudent] = useState<Student | null>(null);
+  const [rank, setRank] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!student) {
-    notFound();
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const studentData = await getStudentById(params.id);
+        if (!studentData) {
+          notFound();
+          return;
+        }
+
+        const allStudents = await getAllStudents();
+        const studentRank = allStudents.findIndex(s => s.id === studentData.id) + 1;
+        
+        setStudent(studentData);
+        setRank(studentRank);
+
+      } catch (error) {
+        console.error("Failed to fetch student data:", error);
+        // Optionally, set an error state here to show an error message
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
-  // Calculate rank
-  const sortedStudents = await getAllStudents();
-  const rank = sortedStudents.findIndex(s => s.id === student.id) + 1;
+  if (!student) {
+    // This can be replaced with a more user-friendly error component
+    return notFound();
+  }
 
   const isOwner = user?.uid === student.id;
 
@@ -39,21 +75,8 @@ export default async function StudentPage({ params }: StudentPageProps) {
               </Link>
             </Button>
         </div>
-        <StudentProfile student={student} rank={rank} isOwner={isOwner} />
+        {rank !== null && <StudentProfile student={student} rank={rank} isOwner={isOwner} />}
       </main>
     </div>
   );
-}
-
-// Generate static paths for all students
-export async function generateStaticParams() {
-  try {
-    const students = await getAllStudents();
-    return students.map((student) => ({
-      id: student.id,
-    }));
-  } catch (error) {
-    console.error("Failed to generate static params for students:", error);
-    return [];
-  }
 }

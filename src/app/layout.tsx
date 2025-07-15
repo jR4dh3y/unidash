@@ -6,8 +6,8 @@ import { Providers } from '@/components/providers';
 import { Header } from '@/components/header';
 
 export const metadata: Metadata = {
-  title: 'Nexus Academicus',
-  description: 'Student Leaderboard and Achievement Tracker',
+  title: '1board',
+  description: 'The Ultimate Leaderboard Experience',
 };
 
 export default function RootLayout({

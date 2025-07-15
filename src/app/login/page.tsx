@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Medal } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { createStudent } from '@/lib/firebase-service';
 
 export default function LoginPage() {
@@ -100,12 +100,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-       <div className="absolute top-8 left-8 flex items-center gap-3">
-          <Medal className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold font-headline tracking-tight text-gray-800 dark:text-gray-200">
-            Nexus Academicus
-          </h1>
-        </div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signin">Sign In</TabsTrigger>
