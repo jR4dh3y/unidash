@@ -2,9 +2,8 @@
 import { Leaderboard } from "@/components/leaderboard";
 import { getAllStudents, getUpcomingEvents } from "@/lib/firebase-service";
 import type { Student, AppEvent } from "@/lib/types";
-import { Medal, Calendar, MapPin, ExternalLink, Code } from "lucide-react";
-import { AuthWidget } from "@/components/auth-widget";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Calendar, MapPin, ExternalLink, Code } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -143,18 +142,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="py-6 px-4 md:px-8">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Medal className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold font-headline tracking-tight">
-              Nexus Academicus
-            </h1>
-          </div>
-          <AuthWidget />
-        </div>
-      </header>
-      <main className="container mx-auto px-4 md:px-8 pb-12">
+      <main className="container mx-auto px-4 md:px-8 pb-12 pt-8">
         <div className="flex flex-col gap-8">
           <div>
             <Leaderboard students={sortedStudents} />

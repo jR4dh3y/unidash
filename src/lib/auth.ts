@@ -12,6 +12,7 @@ export async function getAuthenticatedUser() {
     } catch (error) {
         // This can happen if the token is expired or invalid.
         // It's a normal part of the auth flow.
+        console.log('Token verification failed:', (error as Error).message);
         return null;
     }
 }

@@ -32,6 +32,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('signin');
+
 
   const handleSignUp = async () => {
     if (!name || !email || !password) {
@@ -54,8 +56,7 @@ export default function LoginPage() {
         title: 'Account Created',
         description: 'You have successfully signed up. Please sign in.',
       });
-      // Redirect to sign in tab, no full reload needed
-      window.location.hash = 'signin'; 
+      setActiveTab('signin');
 
     } catch (error: any) {
       toast({
@@ -93,7 +94,7 @@ export default function LoginPage() {
             Nexus Academicus
           </h1>
         </div>
-      <Tabs defaultValue="signin" className="w-[400px]">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signin">Sign In</TabsTrigger>
           <TabsTrigger value="signup">Sign Up</TabsTrigger>

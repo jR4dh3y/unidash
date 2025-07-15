@@ -17,8 +17,13 @@ function getDb() {
 }
 
 export async function createStudent(userId: string, name: string) {
-    const firestore = getDb();
-    if (!firestore) return; 
+    let firestore;
+    try {
+        firestore = getDb();
+    } catch (e) {
+        console.warn("Firestore is not initialized. Skipping student creation.");
+        return; 
+    }
 
     if (!userId || !name) {
         throw new Error("User ID and name are required to create a student.");

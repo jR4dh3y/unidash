@@ -1,9 +1,9 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from '@/components/auth-provider';
 import { StuckButton } from '@/components/stuck-button';
-import { ThemeProvider } from '@/components/theme-provider';
+import { Providers } from '@/components/providers';
+import { Header } from '@/components/header';
 
 export const metadata: Metadata = {
   title: 'Nexus Academicus',
@@ -23,18 +23,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></link>
       </head>
       <body className="font-body antialiased">
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-        >
-            <AuthProvider>
-              {children}
-              <StuckButton />
-              <Toaster />
-            </AuthProvider>
-        </ThemeProvider>
+        <Providers>
+            <Header />
+            {children}
+            <StuckButton />
+            <Toaster />
+        </Providers>
       </body>
     </html>
   );
