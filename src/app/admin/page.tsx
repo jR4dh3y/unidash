@@ -8,6 +8,7 @@ import { Medal } from 'lucide-react';
 const ADMIN_UID = 'YOUR_ADMIN_UID_HERE'; 
 
 async function getAuthenticatedUser() {
+  if (!auth) return null;
   try {
     const token = cookies().get('token')?.value;
     if (!token) return null;

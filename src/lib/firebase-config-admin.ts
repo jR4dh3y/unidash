@@ -1,13 +1,15 @@
 import * as admin from 'firebase-admin';
 
-// Check if all required environment variables are present
-const hasAllCredentials = 
-  process.env.NEXT_PUBLIC_PROJECT_ID &&
-  process.env.FIREBASE_CLIENT_EMAIL &&
-  process.env.FIREBASE_PRIVATE_KEY;
+let auth: admin.auth.Auth | null = null;
+let db: admin.firestore.Firestore | null = null;
 
-if (!admin.apps.length && hasAllCredentials) {
-  try {
+try {
+  const hasAllCredentials =
+    process.env.NEXT_PUBLIC_PROJECT_ID &&
+    process.env.FIREBASE_CLIENT_EMAIL &&
+    process.env.FIREBASE_PRIVATE_KEY;
+
+  if (admin.apps.length === 0 && hasAllCredentials) {
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
@@ -15,12 +17,18 @@ if (!admin.apps.length && hasAllCredentials) {
         privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
       }),
     });
-  } catch (error) {
-    console.error('Firebase admin initialization error', error);
+    auth = admin.auth();
+    db = admin.firestore();
+  } else if (!hasAllCredentials) {
+    console.warn(
+      'Firebase Admin credentials are not fully set in environment variables. Admin features will be disabled.'
+    );
+  } else if (admin.apps.length > 0 && admin.app()) {
+    auth = admin.auth();
+    db = admin.firestore();
   }
-} else if (!hasAllCredentials) {
-    console.warn('Firebase Admin credentials are not fully set in environment variables. Admin features will be disabled.');
+} catch (error) {
+  console.error('Firebase admin initialization error', error);
 }
 
-export const auth = admin.auth();
-export const db = admin.firestore();
+export { auth, db };

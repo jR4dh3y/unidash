@@ -6,12 +6,26 @@ import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timesta
 import type { Student, AppEvent } from './types';
 import { revalidatePath } from 'next/cache';
 
+// A helper to get the database instance and handle initialization errors
+function getDb() {
+    if (!db) {
+        // This can happen if the admin credentials are not set up
+        console.warn("Firestore is not initialized. Check your environment variables.");
+        return null;
+    }
+    return db;
+}
+
+
 export async function createStudent(userId: string, name: string) {
+    const firestore = getDb();
+    if (!firestore) return; // Exit if DB is not available
+
     if (!userId || !name) {
         throw new Error("User ID and name are required to create a student.");
     }
     try {
-        const studentDocRef = doc(db, 'students', userId);
+        const studentDocRef = doc(firestore, 'students', userId);
         await setDoc(studentDocRef, {
             name: name,
             avatar: `https://placehold.co/200x200.png`,
@@ -27,8 +41,11 @@ export async function createStudent(userId: string, name: string) {
 
 
 export async function getAllStudents(): Promise<Student[]> {
+  const firestore = getDb();
+  if (!firestore) return []; // Return empty array if DB is not available
+
   try {
-    const studentsCollection = collection(db, 'students');
+    const studentsCollection = collection(firestore, 'students');
     const q = query(studentsCollection, orderBy('totalPoints', 'desc'));
     const studentSnapshot = await getDocs(q);
     
@@ -61,8 +78,11 @@ export async function getAllStudents(): Promise<Student[]> {
 }
 
 export async function getStudentById(id: string): Promise<Student | null> {
+  const firestore = getDb();
+  if (!firestore) return null; // Return null if DB is not available
+
   try {
-    const studentDocRef = doc(db, 'students', id);
+    const studentDocRef = doc(firestore, 'students', id);
     const studentSnap = await getDoc(studentDocRef);
 
     if (studentSnap.exists()) {
@@ -89,12 +109,17 @@ export async function getStudentById(id: string): Promise<Student | null> {
 
 
 export async function updateStudentProfile(userId: string, data: { name?: string; github?: string; linkedin?: string; }) {
+    const firestore = getDb();
+    if (!firestore) {
+        throw new Error("Firestore is not available.");
+    }
+
     if (!userId) {
         throw new Error("User ID is required to update profile.");
     }
     
     try {
-        const studentDocRef = doc(db, 'students', userId);
+        const studentDocRef = doc(firestore, 'students', userId);
         await updateDoc(studentDocRef, data);
         
         // Revalidate paths to show updated data
@@ -110,8 +135,11 @@ export async function updateStudentProfile(userId: string, data: { name?: string
 
 
 export async function getUpcomingEvents(): Promise<AppEvent[]> {
+  const firestore = getDb();
+  if (!firestore) return []; // Return empty array if DB is not available
+  
   try {
-    const eventsCollection = collection(db, 'events');
+    const eventsCollection = collection(firestore, 'events');
     const today = new Date();
     const q = query(
       eventsCollection, 
