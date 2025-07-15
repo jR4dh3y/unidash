@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
 import { EditProfileSheet } from "./edit-profile-sheet";
 import { Badge } from "./ui/badge";
+import { format } from 'date-fns';
 
 interface StudentProfileProps {
   student: Student;
@@ -176,7 +177,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
               <TableBody>
                 {sortedPointsLog.map((log, index) => (
                   <TableRow key={log.id || index}>
-                    <TableCell className="text-muted-foreground whitespace-nowrap">{new Date(log.date).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">{format(new Date(log.date), 'PPP')}</TableCell>
                     <TableCell className="font-medium">{log.description}</TableCell>
                     <TableCell>
                         <div className="flex items-center gap-2">
