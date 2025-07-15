@@ -1,3 +1,4 @@
+
 import { getStudentById, getAllStudents } from "@/lib/firebase-service";
 import { notFound } from "next/navigation";
 import { StudentProfile } from "@/components/student-profile";
