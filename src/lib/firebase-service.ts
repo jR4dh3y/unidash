@@ -3,7 +3,7 @@
 'use server';
 
 import { db } from './firebase-config';
-import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc, setDoc, addDoc, deleteDoc, increment, arrayUnion } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc, setDoc, addDoc, deleteDoc, increment, arrayUnion, writeBatch } from 'firebase/firestore';
 import type { Student, AppEvent, PointLog, Badge } from './types';
 import { revalidatePath } from 'next/cache';
 
@@ -279,5 +279,110 @@ export async function deleteEvent(eventId: string) {
     } catch (error) {
         console.error("Error deleting event:", error);
         throw new Error("Could not delete the event.");
+    }
+}
+
+
+export async function seedDatabase() {
+    const firestore = getDb();
+    const tempStudents: Student[] = [
+      {
+        id: "1",
+        name: "Alice Johnson",
+        avatar: "https://placehold.co/100x100.png",
+        totalPoints: 1250,
+        github: "https://github.com/alice",
+        linkedin: "https://linkedin.com/in/alice",
+        pointsLog: [
+          { date: "2024-07-01T10:00:00Z", description: "Solved LeetCode daily", points: 50, source: 'LeetCode' },
+          { date: "2024-07-02T11:00:00Z", description: "Workshop attendance", points: 200, source: 'Google Form' },
+          { date: "2024-07-03T14:00:00Z", description: "Hackathon 1st place", points: 1000, source: 'Manual Allocation' },
+        ],
+        achievements: [
+            { id: 'b1', name: 'First Kill', description: 'Solved first LeetCode problem', icon: 'Sword' },
+            { id: 'b2', name: 'Top 10', description: 'Reached the Top 10 on the leaderboard', icon: 'Trophy' },
+            { id: 'b3', name: 'Hot Streak', description: 'Completed a 7-day solving streak', icon: 'Flame' },
+        ],
+      },
+      {
+        id: "2",
+        name: "Bob Williams",
+        avatar: "https://placehold.co/100x100.png",
+        totalPoints: 980,
+        pointsLog: [
+          { date: "2024-07-01T09:00:00Z", description: "Tech quiz winner", points: 150, source: 'Manual Allocation' },
+          { date: "2024-07-04T12:00:00Z", description: "Solved LeetCode daily", points: 50, source: 'LeetCode' },
+        ],
+        achievements: [
+            { id: 'b1', name: 'First Kill', description: 'Solved first LeetCode problem', icon: 'Sword' },
+            { id: 'b4', name: 'Big Brain', description: 'Solved a "Hard" problem', icon: 'BrainCircuit' },
+        ],
+      },
+      {
+        id: "3",
+        name: "Charlie Brown",
+        avatar: "https://placehold.co/100x100.png",
+        totalPoints: 760,
+        github: "https://github.com/charlie",
+        pointsLog: [
+          { date: "2024-07-02T15:00:00Z", description: "Code review assistance", points: 100, source: 'Manual Allocation' },
+        ],
+        achievements: [
+            { id: 'b5', name: 'Event Enthusiast', description: 'Attended a workshop or event', icon: 'CalendarCheck' },
+        ]
+      },
+      {
+        id: "4",
+        name: "Diana Miller",
+        avatar: "https://placehold.co/100x100.png",
+        totalPoints: 650,
+        linkedin: "https://linkedin.com/in/diana",
+        pointsLog: [
+          { date: "2024-07-05T18:00:00Z", description: "Open source contribution", points: 300, source: 'GitHub' },
+        ],
+        achievements: [
+             { id: 'b1', name: 'First Kill', description: 'Solved first LeetCode problem', icon: 'Sword' },
+        ]
+      },
+      {
+        id: "5",
+        name: "Ethan Garcia",
+        avatar: "https://placehold.co/100x100.png",
+        totalPoints: 420,
+        pointsLog: [
+          { date: "2024-07-06T10:00:00Z", description: "Solved LeetCode daily", points: 50, source: 'LeetCode' },
+        ],
+        achievements: []
+      },
+       {
+        id: "6",
+        name: "Fiona Clark",
+        avatar: "https://placehold.co/100x100.png",
+        totalPoints: 210,
+        pointsLog: [
+          { date: "2024-07-08T11:30:00Z", description: "Attended mentorship session", points: 100, source: 'Manual Allocation' },
+        ],
+        achievements: []
+      },
+    ];
+
+    try {
+        const batch = writeBatch(firestore);
+        tempStudents.forEach(student => {
+            const studentRef = doc(firestore, 'students', student.id);
+            // We are directly setting the document, including the achievements and pointsLog arrays
+            batch.set(studentRef, {
+                ...student,
+                // Ensure pointsLog dates are Timestamps for consistent querying
+                pointsLog: student.pointsLog.map(log => ({...log, date: Timestamp.fromDate(new Date(log.date))}))
+            });
+        });
+        await batch.commit();
+
+        revalidatePath('/');
+        revalidatePath('/admin');
+    } catch (error) {
+        console.error("Error seeding database:", error);
+        throw new Error("Could not seed database.");
     }
 }

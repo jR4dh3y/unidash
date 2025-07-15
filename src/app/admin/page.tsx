@@ -4,7 +4,7 @@
 import { AuthWidget } from '@/components/auth-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShieldAlert, Loader2 } from 'lucide-react';
+import { ShieldAlert, Loader2, Database } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth-provider';
@@ -12,7 +12,8 @@ import { EventManagementTab } from '@/components/admin/event-management-tab';
 import { StudentManagementTab } from '@/components/admin/student-management-tab';
 import { useEffect, useState } from 'react';
 import type { Student, AppEvent } from '@/lib/types';
-import { getAllStudents, getAllEvents } from '@/lib/firebase-service';
+import { getAllStudents, getAllEvents, seedDatabase } from '@/lib/firebase-service';
+import { useToast } from '@/hooks/use-toast';
 
 
 const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2'; 
@@ -22,6 +23,8 @@ export default function AdminPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [events, setEvents] = useState<AppEvent[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [isSeeding, setIsSeeding] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchData() {
@@ -45,6 +48,28 @@ export default function AdminPage() {
         fetchData();
     }
   }, [user, loading]);
+
+  const handleSeedDatabase = async () => {
+    setIsSeeding(true);
+    try {
+        await seedDatabase();
+        toast({
+            title: "Database Seeded!",
+            description: "Temporary student data has been added to Firestore.",
+        });
+        // Re-fetch data to update the view
+        const studentData = await getAllStudents();
+        setStudents(studentData);
+    } catch (error) {
+         toast({
+            variant: "destructive",
+            title: "Seeding Failed",
+            description: "There was an error seeding the database.",
+        });
+    } finally {
+        setIsSeeding(false);
+    }
+  };
 
 
   if (loading) {
@@ -79,9 +104,15 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <AuthWidget />
+            <div className="flex items-center gap-4">
+                <Button onClick={handleSeedDatabase} disabled={isSeeding} variant="outline">
+                    {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                    {isSeeding ? 'Seeding...' : 'Seed Database'}
+                </Button>
+                <AuthWidget />
+            </div>
         </div>
         
         <Tabs defaultValue="events">
@@ -101,4 +132,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
