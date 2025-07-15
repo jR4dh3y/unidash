@@ -12,11 +12,12 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { HelpCircle, Bot, Loader2, Send } from 'lucide-react';
+import { Bot, Loader2, Send } from 'lucide-react';
 import { studentCoach } from '@/ai/flows/student-coach';
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 interface Message {
@@ -65,14 +66,23 @@ export function StuckButton() {
 
   return (
     <>
-      <Button
-        onClick={() => handleOpenChange(true)}
-        className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg"
-        size="icon"
-      >
-        <HelpCircle className="h-8 w-8" />
-        <span className="sr-only">Stuck? Get help.</span>
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={() => handleOpenChange(true)}
+              className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg transition-transform hover:scale-110"
+              size="icon"
+            >
+              <Bot className="h-8 w-8" />
+              <span className="sr-only">Stuck? Get help.</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <p>Stuck? Get help from the AI Coach.</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[425px] md:max-w-[600px] flex flex-col h-[70vh]">
