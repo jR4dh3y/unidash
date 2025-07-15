@@ -63,6 +63,8 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
 
   const pointsBySource = useMemo(() => {
     const sourceMap: { [key: string]: number } = {};
+    if (!student.pointsLog) return [];
+    
     for (const log of student.pointsLog) {
       if (log.source && typeof log.points === 'number' && !isNaN(log.points)) {
         if (!sourceMap[log.source]) {
@@ -73,6 +75,10 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
     }
     return Object.entries(sourceMap).map(([name, points]) => ({ name, points }));
   }, [student.pointsLog]);
+
+  const isValidDate = (date: any) => {
+    return date instanceof Date && !isNaN(date.getTime());
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -175,23 +181,28 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedPointsLog.map((log, index) => (
-                  <TableRow key={log.id || index}>
-                    <TableCell className="text-muted-foreground whitespace-nowrap">{format(new Date(log.date), 'PPP')}</TableCell>
-                    <TableCell className="font-medium">{log.description}</TableCell>
-                    <TableCell>
-                        <div className="flex items-center gap-2">
-                            {log.source && sourceIcons[log.source]}
-                            <span className="hidden sm:inline">{log.source}</span>
-                        </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                        <Badge variant="secondary" className="bg-accent/20 text-accent-foreground hover:bg-accent/30 dark:text-white">
-                            {log.points > 0 ? '+' : ''}{log.points}
-                        </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {sortedPointsLog.map((log, index) => {
+                  const date = new Date(log.date);
+                  return (
+                    <TableRow key={log.id || index}>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {isValidDate(date) ? format(date, 'PPP') : 'Invalid Date'}
+                      </TableCell>
+                      <TableCell className="font-medium">{log.description}</TableCell>
+                      <TableCell>
+                          <div className="flex items-center gap-2">
+                              {log.source && sourceIcons[log.source]}
+                              <span className="hidden sm:inline">{log.source}</span>
+                          </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                          <Badge variant="secondary" className="bg-accent/20 text-accent-foreground hover:bg-accent/30 dark:text-white">
+                              {log.points > 0 ? '+' : ''}{log.points}
+                          </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
                  {sortedPointsLog.length === 0 && (
                     <TableRow>
                         <TableCell colSpan={4} className="h-24 text-center">
