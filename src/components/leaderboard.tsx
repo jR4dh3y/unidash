@@ -40,7 +40,7 @@ export function Leaderboard({ students }: LeaderboardProps) {
   };
 
   return (
-    <Card className="shadow-none border-none bg-transparent dark:bg-transparent h-full flex flex-col">
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <CardTitle className="text-2xl font-headline">Student Leaderboard</CardTitle>
@@ -49,7 +49,7 @@ export function Leaderboard({ students }: LeaderboardProps) {
             <Input
               type="search"
               placeholder="Search students..."
-              className="pl-9 bg-sidebar-accent border-sidebar-border focus:bg-background"
+              className="pl-9"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               aria-label="Search students"
@@ -61,15 +61,15 @@ export function Leaderboard({ students }: LeaderboardProps) {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-sidebar-border">
+              <TableRow>
                 <TableHead className="w-16 text-center">Rank</TableHead>
                 <TableHead>Student</TableHead>
                 <TableHead className="text-right">Points</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredStudents.map((student) => (
-                <TableRow key={student.id} className="border-sidebar-border hover:bg-sidebar-accent/50 transition-colors">
+              {filteredStudents.map((student, index) => (
+                <TableRow key={student.id}>
                   <TableCell className="font-bold text-center">
                     <div className="flex justify-center items-center">
                       {getRankIndicator(students.findIndex(s => s.id === student.id) + 1)}
