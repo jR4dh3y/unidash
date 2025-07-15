@@ -1,9 +1,7 @@
 
-import type { LeetCodeDailyProblem } from './types';
+'use server';
 
-// This file is kept for type definitions, but the fetch logic has been moved
-// to a server action in `src/lib/actions.ts` to avoid CORS issues.
-// The `getDailyProblem` function is no longer used directly by client components.
+import type { LeetCodeDailyProblem } from './types';
 
 const LEETCODE_API_ENDPOINT = 'https://leetcode.com/graphql';
 
@@ -34,9 +32,7 @@ query questionOfToday {
   }
 }`;
 
-// This function is deprecated in favor of getDailyProblemAction to avoid CORS issues.
-export async function getDailyProblem(): Promise<LeetCodeDailyProblem | null> {
-  console.warn("getDailyProblem is deprecated. Use the server action `getDailyProblemAction` instead.");
+export async function getDailyProblemAction(): Promise<LeetCodeDailyProblem | null> {
   try {
     const response = await fetch(LEETCODE_API_ENDPOINT, {
       method: 'POST',
@@ -45,10 +41,16 @@ export async function getDailyProblem(): Promise<LeetCodeDailyProblem | null> {
         'Referer': 'https://leetcode.com/', 
       },
       body: JSON.stringify({ query: DAILY_PROBLEM_QUERY }),
+       // No-cors mode is not needed for server-side fetches.
+       // cache: 'no-store' can be useful to prevent stale data.
+      cache: 'no-store',
     });
 
     if (!response.ok) {
-      console.error('Failed to fetch LeetCode daily problem:', response.statusText);
+      console.error('Failed to fetch LeetCode daily problem:', response.status, response.statusText);
+      // It's helpful to log the response body if possible, to see error details from the API
+      const errorBody = await response.text();
+      console.error('LeetCode API error body:', errorBody);
       return null;
     }
 

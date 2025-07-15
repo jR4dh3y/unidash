@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { format } from "date-fns";
-import { getDailyProblem } from "@/lib/leetcode";
+import { getDailyProblemAction } from "@/lib/actions";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -125,7 +125,7 @@ function LeetCodeCard() {
     useEffect(() => {
         async function fetchProblem() {
             try {
-                const problem = await getDailyProblem();
+                const problem = await getDailyProblemAction();
                 setDailyProblem(problem);
             } catch (error) {
                 console.error("Failed to fetch LeetCode problem:", error);
