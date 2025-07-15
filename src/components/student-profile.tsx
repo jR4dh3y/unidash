@@ -104,7 +104,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
       
       {/* Left Column - Profile & Stats */}
       <div className="lg:col-span-1 flex flex-col gap-6">
-        <Card className="shadow-lg border-none sticky top-8 dark:bg-gray-800">
+        <Card className="shadow-lg border-none sticky top-8 transition-all duration-300 dark:bg-gray-800">
           <CardContent className="pt-6 flex flex-col items-center text-center relative">
             {isOwner && (
                 <EditProfileSheet student={student}>
@@ -114,7 +114,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
                     </Button>
                 </EditProfileSheet>
             )}
-            <Avatar className="w-32 h-32 mb-4 border-4 border-primary/20">
+            <Avatar className="w-32 h-32 mb-4 border-4 border-primary/20 transition-transform duration-300 hover:scale-105">
               <AvatarImage src={student.avatar} alt={student.name} data-ai-hint="person portrait" />
               <AvatarFallback className="text-4xl">
                 {student.name.charAt(0)}
@@ -129,14 +129,14 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
 
             <div className="flex gap-4">
                 {student.github && (
-                  <Button asChild variant="ghost" size="icon">
+                  <Button asChild variant="ghost" size="icon" className="transition-transform hover:scale-110">
                       <Link href={student.github} target="_blank" rel="noopener noreferrer" aria-label={`${student.name}'s Github Profile`}>
                           <Github className="h-5 w-5" />
                       </Link>
                   </Button>
                 )}
                 {student.linkedin && (
-                  <Button asChild variant="ghost" size="icon">
+                  <Button asChild variant="ghost" size="icon" className="transition-transform hover:scale-110">
                       <Link href={student.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${student.name}'s LinkedIn Profile`}>
                           <Linkedin className="h-5 w-5" />
                       </Link>
@@ -146,7 +146,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardHeader className="pb-2">
                  <CardTitle className="text-sm font-medium flex items-center justify-between">
                     <span>Rank</span>
@@ -157,7 +157,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
                 <div className="text-2xl font-bold">#{rank}</div>
             </CardContent>
         </Card>
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardHeader className="pb-2">
                  <CardTitle className="text-sm font-medium flex items-center justify-between">
                     <span>Total Submissions</span>
@@ -173,7 +173,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
       {/* Right Column - Charts & History */}
       <div className="lg:col-span-3 flex flex-col gap-6">
 
-        <Card className="shadow-lg border-none dark:bg-gray-800">
+        <Card className="shadow-lg border-none transition-all duration-300 dark:bg-gray-800">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Award className="h-5 w-5" />Achievements</CardTitle>
                 <CardDescription>Badges earned for various accomplishments.</CardDescription>
@@ -185,7 +185,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
                         {student.achievements.map((badge) => (
                           <Tooltip key={badge.id}>
                             <TooltipTrigger asChild>
-                              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 border hover:bg-muted transition-colors">
+                              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 border hover:bg-muted transition-all duration-200 hover:scale-105 hover:shadow-md">
                                 <BadgeIcon name={badge.icon} className="h-10 w-10 text-primary" />
                                 <span className="text-sm font-medium text-center">{badge.name}</span>
                               </div>
@@ -205,7 +205,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
             </CardContent>
         </Card>
         
-        <Card className="shadow-lg border-none dark:bg-gray-800">
+        <Card className="shadow-lg border-none transition-all duration-300 dark:bg-gray-800">
             <CardHeader>
                 <CardTitle>Points by Source</CardTitle>
                 <CardDescription>Distribution of points earned from different activities.</CardDescription>
@@ -221,7 +221,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
             </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-none dark:bg-gray-800">
+        <Card className="shadow-lg border-none transition-all duration-300 dark:bg-gray-800">
           <CardHeader>
             <CardTitle>Point History</CardTitle>
             <CardDescription>A log of all points earned.</CardDescription>
@@ -240,7 +240,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
                 {sortedPointsLog.map((log, index) => {
                   const date = new Date(log.date);
                   return (
-                    <TableRow key={log.id || index}>
+                    <TableRow key={log.id || index} className="transition-colors hover:bg-muted/50">
                       <TableCell className="text-muted-foreground whitespace-nowrap">
                         {isValidDate(date) ? format(date, 'PPP') : 'Invalid Date'}
                       </TableCell>

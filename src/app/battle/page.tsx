@@ -87,7 +87,7 @@ export default function BattlePage() {
         {/* Left Column: Start & History */}
         <div className="lg:col-span-1 flex flex-col gap-8">
             {/* Start New Duel Card */}
-            <Card>
+            <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Flame className="h-5 w-5" />
@@ -134,7 +134,7 @@ export default function BattlePage() {
             </Card>
 
             {/* Battle History Card */}
-            <Card>
+            <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                 <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <History className="h-5 w-5" />
@@ -151,7 +151,7 @@ export default function BattlePage() {
                     </TableHeader>
                     <TableBody>
                     {mockHistory.map((battle) => (
-                        <TableRow key={battle.id}>
+                        <TableRow key={battle.id} className="transition-colors hover:bg-muted/50">
                         <TableCell>{battle.opponent}</TableCell>
                         <TableCell>
                             <span className={`font-semibold ${battle.result === 'Won' ? 'text-green-500' : 'text-red-500'}`}>
@@ -168,7 +168,7 @@ export default function BattlePage() {
 
         {/* Right Column: Ongoing Duel */}
         <div className="lg:col-span-2">
-            <Card className="h-full">
+            <Card className="h-full transition-all duration-300">
                 <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                     <span className="flex items-center gap-2">
@@ -200,8 +200,8 @@ export default function BattlePage() {
                         <Button className="w-full" size="lg">Submit Solution</Button>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-[400px] text-center bg-muted/50 rounded-lg">
-                        <Swords className="h-16 w-16 text-muted-foreground/50 mb-4" />
+                    <div className="flex flex-col items-center justify-center h-[400px] text-center bg-muted/50 rounded-lg transition-colors">
+                        <Swords className="h-16 w-16 text-muted-foreground/50 mb-4 transition-transform group-hover:scale-110" />
                         <p className="text-muted-foreground">Your battle arena awaits.</p>
                         <p className="text-sm text-muted-foreground/80">Select an opponent and difficulty to start.</p>
                     </div>

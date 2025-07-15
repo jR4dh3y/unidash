@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, createElement } from "react";
@@ -59,7 +60,7 @@ export function Leaderboard({ students }: LeaderboardProps) {
   };
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col transition-all duration-300">
       <CardHeader>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <CardTitle className="text-2xl font-headline">Student Leaderboard</CardTitle>
@@ -89,7 +90,7 @@ export function Leaderboard({ students }: LeaderboardProps) {
               </TableHeader>
               <TableBody>
                 {filteredStudents.map((student, index) => (
-                  <TableRow key={student.id}>
+                  <TableRow key={student.id} className="transition-transform duration-200 hover:shadow-md hover:-translate-y-1">
                     <TableCell className="font-bold text-center">
                       <div className="flex justify-center items-center">
                         {getRankIndicator(students.findIndex(s => s.id === student.id) + 1)}

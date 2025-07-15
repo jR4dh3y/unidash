@@ -68,7 +68,7 @@ function UpcomingEvents() {
   }
 
   return (
-    <Card>
+    <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <CardHeader>
         <CardTitle className="text-2xl font-headline flex items-center gap-2">
           <Calendar className="h-6 w-6 text-primary" />
@@ -78,7 +78,7 @@ function UpcomingEvents() {
       <CardContent>
         <div className="grid gap-6">
           {events.map((event) => (
-            <div key={event.id} className="flex flex-col sm:flex-row gap-4 items-start p-4 rounded-lg bg-muted/50">
+            <div key={event.id} className="flex flex-col sm:flex-row gap-4 items-start p-4 rounded-lg bg-muted/50 transition-colors hover:bg-muted/90">
               <div className="flex-shrink-0 w-full sm:w-28 text-center sm:text-left">
                 <div className="text-lg font-bold text-primary">
                   {format(new Date(event.date), "MMM")}
@@ -180,7 +180,7 @@ function LeetCodeCard() {
     }
 
     return (
-        <Card className="flex flex-col h-full">
+        <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardHeader>
                 <CardTitle className="text-2xl font-headline flex items-center gap-2">
                     <Code className="h-6 w-6 text-primary" />
