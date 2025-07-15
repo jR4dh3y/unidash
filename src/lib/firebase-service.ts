@@ -1,9 +1,30 @@
+
 'use server';
 
 import { db } from './firebase-config';
-import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc, setDoc } from 'firebase/firestore';
 import type { Student, AppEvent } from './types';
 import { revalidatePath } from 'next/cache';
+
+export async function createStudent(userId: string, name: string) {
+    if (!userId || !name) {
+        throw new Error("User ID and name are required to create a student.");
+    }
+    try {
+        const studentDocRef = doc(db, 'students', userId);
+        await setDoc(studentDocRef, {
+            name: name,
+            avatar: `https://placehold.co/200x200.png`,
+            totalPoints: 0,
+            pointsLog: []
+        });
+        revalidatePath('/'); // Revalidate leaderboard page
+    } catch (error) {
+        console.error("Error creating student document:", error);
+        throw new Error("Could not create student profile.");
+    }
+}
+
 
 export async function getAllStudents(): Promise<Student[]> {
   try {

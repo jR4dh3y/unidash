@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Medal } from 'lucide-react';
+import { createStudent } from '@/lib/firebase-service';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -33,16 +34,29 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   const handleSignUp = async () => {
+    if (!name || !email || !password) {
+        toast({
+            variant: 'destructive',
+            title: 'Missing information',
+            description: 'Please fill out all fields to sign up.',
+        });
+        return;
+    }
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName: name });
+      
+      // Create a corresponding student document in Firestore
+      await createStudent(userCredential.user.uid, name);
+
       toast({
         title: 'Account Created',
         description: 'You have successfully signed up. Please sign in.',
       });
-      // Force a reload to update user state across the app
-      router.push('/login');
+      // Redirect to sign in tab, no full reload needed
+      window.location.hash = 'signin'; 
+
     } catch (error: any) {
       toast({
         variant: 'destructive',
