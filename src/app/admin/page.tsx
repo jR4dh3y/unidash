@@ -1,26 +1,11 @@
 
 import { notFound } from 'next/navigation';
-import { auth } from '@/lib/firebase-config-admin';
-import { cookies } from 'next/headers';
 import { AuthWidget } from '@/components/auth-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Medal } from 'lucide-react';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 const ADMIN_EMAIL = 'admin@admin.com'; 
-
-async function getAuthenticatedUser() {
-  if (!auth) return null;
-  try {
-    const token = cookies().get('token')?.value;
-    if (!token) return null;
-    const decodedToken = await auth.verifyIdToken(token);
-    return decodedToken;
-  } catch (error) {
-    console.error("Authentication error:", error);
-    return null;
-  }
-}
-
 
 export default async function AdminPage() {
   const user = await getAuthenticatedUser();
