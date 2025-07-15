@@ -1,6 +1,12 @@
 import * as admin from 'firebase-admin';
 
-if (!admin.apps.length) {
+// Check if all required environment variables are present
+const hasAllCredentials = 
+  process.env.NEXT_PUBLIC_PROJECT_ID &&
+  process.env.FIREBASE_CLIENT_EMAIL &&
+  process.env.FIREBASE_PRIVATE_KEY;
+
+if (!admin.apps.length && hasAllCredentials) {
   try {
     admin.initializeApp({
       credential: admin.credential.cert({
@@ -10,8 +16,10 @@ if (!admin.apps.length) {
       }),
     });
   } catch (error) {
-    console.log('Firebase admin initialization error', error);
+    console.error('Firebase admin initialization error', error);
   }
+} else if (!hasAllCredentials) {
+    console.warn('Firebase Admin credentials are not fully set in environment variables. Admin features will be disabled.');
 }
 
 export const auth = admin.auth();
