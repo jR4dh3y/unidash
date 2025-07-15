@@ -5,7 +5,8 @@ import { db } from './firebase-config';
 import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc, setDoc, addDoc } from 'firebase/firestore';
 import type { Student, AppEvent } from './types';
 import { revalidatePath } from 'next/cache';
-import { auth as adminAuth } from './firebase-config-admin';
+
+const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2';
 
 // A helper to get the database instance and handle initialization errors
 function getDb() {
@@ -71,18 +72,8 @@ export async function getAllStudents(): Promise<Student[]> {
     });
 
     // Exclude admin from leaderboard
-    if (adminAuth) {
-        try {
-            const adminUser = await adminAuth.getUserByEmail('admin@admin.com');
-            return studentList.filter(student => student.id !== adminUser.uid);
-        } catch (error) {
-            // admin user may not exist yet, which is fine
-            return studentList;
-        }
-    }
-
-
-    return studentList;
+    return studentList.filter(student => student.id !== ADMIN_UID);
+    
   } catch (error) {
     console.error("Error fetching students from Firestore:", error);
     return [];

@@ -23,14 +23,14 @@ import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const ADMIN_EMAIL = 'admin@admin.com'; 
+const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2'; 
 
 export function AuthWidget() {
   const { user, loading } = useAuth();
   const { setTheme } = useTheme();
   const router = useRouter();
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const isAdmin = user?.uid === ADMIN_UID;
 
   const handleSignOut = async () => {
     try {

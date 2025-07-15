@@ -6,12 +6,12 @@ import { Medal } from 'lucide-react';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { AddEventForm } from '@/components/add-event-form';
 
-const ADMIN_EMAIL = 'admin@admin.com'; 
+const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2'; 
 
 export default async function AdminPage() {
   const user = await getAuthenticatedUser();
 
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || user.uid !== ADMIN_UID) {
     notFound();
   }
 
