@@ -1,3 +1,6 @@
+
+'use client';
+
 import type { Student } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,9 +13,11 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { Github, Linkedin, Code, FileText, UserCog, Sparkles } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Github, Linkedin, Code, FileText, UserCog, Sparkles, Trophy, ListChecks } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
 
 interface StudentProfileProps {
   student: Student;
@@ -26,14 +31,49 @@ const sourceIcons: Record<Student['pointsLog'][number]['source'], React.ReactNod
     'GitHub': <Github className="h-4 w-4 text-muted-foreground" />,
 }
 
+function PointsChart({ data }: { data: any[] }) {
+    return (
+        <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip
+                    cursor={{ fill: 'hsl(var(--muted))' }}
+                    contentStyle={{ 
+                        background: 'hsl(var(--background))',
+                        borderColor: 'hsl(var(--border))',
+                        borderRadius: 'var(--radius)',
+                    }}
+                />
+                <Bar dataKey="points" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+            </BarChart>
+        </ResponsiveContainer>
+    );
+}
+
 export function StudentProfile({ student, rank }: StudentProfileProps) {
-  const sortedPointsLog = student.pointsLog 
-    ? [...student.pointsLog].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    : [];
+  const sortedPointsLog = useMemo(() => 
+    student.pointsLog 
+      ? [...student.pointsLog].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      : [],
+    [student.pointsLog]);
+
+  const pointsBySource = useMemo(() => {
+    const sourceMap: { [key: string]: number } = {};
+    for (const log of student.pointsLog) {
+      if (!sourceMap[log.source]) {
+        sourceMap[log.source] = 0;
+      }
+      sourceMap[log.source] += log.points;
+    }
+    return Object.entries(sourceMap).map(([name, points]) => ({ name, points }));
+  }, [student.pointsLog]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-1">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      
+      {/* Left Column - Profile & Stats */}
+      <div className="lg:col-span-1 flex flex-col gap-6">
         <Card className="shadow-lg border-none sticky top-8 dark:bg-gray-800">
           <CardContent className="pt-6 flex flex-col items-center text-center">
             <Avatar className="w-32 h-32 mb-4 border-4 border-primary/20">
@@ -43,14 +83,12 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
               </AvatarFallback>
             </Avatar>
             <h2 className="text-2xl font-bold font-headline">{student.name}</h2>
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mt-2 mb-4 text-muted-foreground">
-                <div className="flex items-center gap-1">
-                    <Sparkles className="h-4 w-4 text-accent" />
-                    <span className="font-semibold text-lg text-foreground">{student.totalPoints.toLocaleString()} Points</span>
-                </div>
-                <div className="text-lg hidden sm:block">•</div>
-                <div className="font-semibold text-lg text-foreground">Rank #{rank}</div>
+            
+             <div className="flex items-center gap-2 mt-2 mb-4 text-muted-foreground">
+                <Sparkles className="h-5 w-5 text-accent" />
+                <span className="font-semibold text-lg text-foreground">{student.totalPoints.toLocaleString()} Total Points</span>
             </div>
+
             <div className="flex gap-4">
                 {student.github && (
                   <Button asChild variant="ghost" size="icon">
@@ -69,9 +107,45 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
             </div>
           </CardContent>
         </Card>
+        
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                 <CardTitle className="text-sm font-medium">Rank</CardTitle>
+                 <Trophy className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">#{rank}</div>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                 <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
+                 <ListChecks className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{student.pointsLog.length}</div>
+            </CardContent>
+        </Card>
       </div>
 
-      <div className="lg:col-span-2">
+      {/* Right Column - Charts & History */}
+      <div className="lg:col-span-3 flex flex-col gap-6">
+        <Card className="shadow-lg border-none dark:bg-gray-800">
+            <CardHeader>
+                <CardTitle>Points by Source</CardTitle>
+                <CardDescription>Distribution of points earned from different activities.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 {pointsBySource.length > 0 ? (
+                    <PointsChart data={pointsBySource} />
+                 ) : (
+                    <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                        No data to display.
+                    </div>
+                 )}
+            </CardContent>
+        </Card>
+
         <Card className="shadow-lg border-none dark:bg-gray-800">
           <CardHeader>
             <CardTitle>Point History</CardTitle>
