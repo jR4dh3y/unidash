@@ -40,16 +40,16 @@ export function Leaderboard({ students }: LeaderboardProps) {
   };
 
   return (
-    <Card className="shadow-lg border-none dark:bg-gray-800">
+    <Card className="shadow-none border-none bg-transparent dark:bg-transparent h-full flex flex-col">
       <CardHeader>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <CardTitle className="text-2xl font-headline">Student Leaderboard</CardTitle>
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full md:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search students..."
-              className="pl-9"
+              className="pl-9 bg-sidebar-accent border-sidebar-border focus:bg-background"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               aria-label="Search students"
@@ -57,11 +57,11 @@ export function Leaderboard({ students }: LeaderboardProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-sidebar-border">
                 <TableHead className="w-16 text-center">Rank</TableHead>
                 <TableHead>Student</TableHead>
                 <TableHead className="text-right">Points</TableHead>
@@ -69,7 +69,7 @@ export function Leaderboard({ students }: LeaderboardProps) {
             </TableHeader>
             <TableBody>
               {filteredStudents.map((student) => (
-                <TableRow key={student.id} className="hover:bg-muted/50 transition-colors">
+                <TableRow key={student.id} className="border-sidebar-border hover:bg-sidebar-accent/50 transition-colors">
                   <TableCell className="font-bold text-center">
                     <div className="flex justify-center items-center">
                       {getRankIndicator(students.findIndex(s => s.id === student.id) + 1)}

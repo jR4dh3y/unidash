@@ -1,22 +1,38 @@
 import { Leaderboard } from "@/components/leaderboard";
 import { getAllStudents, getUpcomingEvents } from "@/lib/firebase-service";
 import type { Student, AppEvent } from "@/lib/types";
-import { Medal, Calendar, MapPin, ExternalLink } from "lucide-react";
+import { Medal, Calendar, MapPin, ExternalLink, Code } from "lucide-react";
 import { AuthWidget } from "@/components/auth-widget";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { format } from "date-fns";
+import { Sidebar, SidebarProvider, SidebarInset, SidebarHeader, SidebarTrigger, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 
 async function UpcomingEvents() {
   const events: AppEvent[] = await getUpcomingEvents();
 
   if (events.length === 0) {
-    return null;
+    return (
+        <Card className="h-full">
+            <CardHeader>
+                <CardTitle className="text-2xl font-headline flex items-center gap-2">
+                    <Calendar className="h-6 w-6 text-primary" />
+                    Upcoming Events
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center justify-center h-48 text-muted-foreground">
+                    <p>No upcoming events.</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
   }
 
   return (
-    <Card className="shadow-lg border-none mb-8">
+    <Card>
       <CardHeader>
         <CardTitle className="text-2xl font-headline flex items-center gap-2">
           <Calendar className="h-6 w-6 text-primary" />
@@ -66,27 +82,62 @@ async function UpcomingEvents() {
   );
 }
 
+function LeetCodeCard() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-2xl font-headline flex items-center gap-2">
+                    <Code className="h-6 w-6 text-primary" />
+                    Today's LeetCode Problem
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                 <div className="flex items-center justify-center h-48 text-muted-foreground">
+                    <p>No problem specified.</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
 
 export default async function Home() {
   const sortedStudents: Student[] = await getAllStudents();
 
   return (
-    <div className="min-h-screen bg-background text-foreground dark:bg-gray-900 dark:text-gray-100">
-      <header className="py-6 px-4 md:px-8">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Medal className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold font-headline tracking-tight text-gray-800 dark:text-gray-200">
-              Nexus Academicus
-            </h1>
-          </div>
-          <AuthWidget />
-        </div>
-      </header>
-      <main className="container mx-auto px-4 md:px-8 pb-12">
-        <UpcomingEvents />
-        <Leaderboard students={sortedStudents} />
-      </main>
-    </div>
+    <SidebarProvider>
+        <Sidebar>
+            <SidebarHeader>
+                 <div className="flex items-center gap-3 py-4">
+                    <Medal className="h-8 w-8 text-primary" />
+                    <h1 className="text-2xl font-bold font-headline tracking-tight text-sidebar-foreground">
+                    Nexus Academicus
+                    </h1>
+                </div>
+            </SidebarHeader>
+            <Separator />
+            <SidebarContent>
+                <Leaderboard students={sortedStudents} />
+            </SidebarContent>
+        </Sidebar>
+
+        <SidebarInset>
+            <header className="py-6 px-4 md:px-8">
+                <div className="container mx-auto flex items-center justify-end">
+                    <AuthWidget />
+                </div>
+            </header>
+            <main className="container mx-auto px-4 md:px-8 pb-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2">
+                        <UpcomingEvents />
+                    </div>
+                    <div>
+                        <LeetCodeCard />
+                    </div>
+                </div>
+            </main>
+        </SidebarInset>
+    </SidebarProvider>
   );
 }
