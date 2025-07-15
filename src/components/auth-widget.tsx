@@ -18,7 +18,7 @@ import {
   DropdownMenuPortal,
   DropdownMenuSubContent
 } from './ui/dropdown-menu';
-import { LogIn, LogOut, Loader2, Moon, Sun, Monitor, Shield } from 'lucide-react';
+import { LogIn, LogOut, Loader2, Moon, Sun, Monitor, Shield, User } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -75,6 +75,12 @@ export function AuthWidget() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+           <DropdownMenuItem asChild>
+             <Link href="/profile">
+               <User className="mr-2 h-4 w-4" />
+               <span>My Profile</span>
+             </Link>
+           </DropdownMenuItem>
            <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

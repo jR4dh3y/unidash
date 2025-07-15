@@ -10,8 +10,8 @@ export interface Student {
   id: string;
   name: string;
   avatar: string;
-  github: string;
-  linkedin: string;
+  github?: string;
+  linkedin?: string;
   totalPoints: number;
   pointsLog: PointLog[];
 }

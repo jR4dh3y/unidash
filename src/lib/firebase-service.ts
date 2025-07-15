@@ -1,8 +1,9 @@
 'use server';
 
 import { db } from './firebase-config';
-import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc } from 'firebase/firestore';
 import type { Student, AppEvent } from './types';
+import { revalidatePath } from 'next/cache';
 
 export async function getAllStudents(): Promise<Student[]> {
   try {
@@ -64,6 +65,28 @@ export async function getStudentById(id: string): Promise<Student | null> {
     return null;
   }
 }
+
+
+export async function updateStudentProfile(userId: string, data: { name?: string; github?: string; linkedin?: string; }) {
+    if (!userId) {
+        throw new Error("User ID is required to update profile.");
+    }
+    
+    try {
+        const studentDocRef = doc(db, 'students', userId);
+        await updateDoc(studentDocRef, data);
+        
+        // Revalidate paths to show updated data
+        revalidatePath(`/student/${userId}`);
+        revalidatePath('/');
+        revalidatePath('/profile');
+
+    } catch (error) {
+        console.error("Error updating student profile:", error);
+        throw new Error("Could not update profile.");
+    }
+}
+
 
 export async function getUpcomingEvents(): Promise<AppEvent[]> {
   try {
