@@ -2,8 +2,8 @@
 'use server';
 
 import { db } from './firebase-config';
-import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc, setDoc, addDoc } from 'firebase/firestore';
-import type { Student, AppEvent } from './types';
+import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc, setDoc, addDoc, deleteDoc, serverTimestamp, increment } from 'firebase/firestore';
+import type { Student, AppEvent, PointLog } from './types';
 import { revalidatePath } from 'next/cache';
 
 const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2';
@@ -128,10 +128,51 @@ export async function updateStudentProfile(userId: string, data: { name?: string
         
         revalidatePath(`/student/${userId}`);
         revalidatePath('/');
+        revalidatePath('/admin');
 
     } catch (error) {
         console.error("Error updating student profile:", error);
         throw new Error("Could not update profile.");
+    }
+}
+
+export async function awardPoints(userId: string, points: number, reason: string) {
+    const firestore = getDb();
+
+    if (!userId) {
+        throw new Error("User ID is required to award points.");
+    }
+
+    try {
+        const studentDocRef = doc(firestore, 'students', userId);
+        const studentSnap = await getDoc(studentDocRef);
+
+        if (!studentSnap.exists()) {
+            throw new Error("Student not found.");
+        }
+
+        const studentData = studentSnap.data();
+        const currentPointsLog = studentData.pointsLog || [];
+
+        const newLogEntry: Omit<PointLog, 'id'> = {
+            date: new Date().toISOString(),
+            description: reason,
+            points: points,
+            source: 'Manual Allocation',
+        };
+
+        await updateDoc(studentDocRef, {
+            totalPoints: increment(points),
+            pointsLog: [...currentPointsLog, newLogEntry]
+        });
+
+        revalidatePath(`/student/${userId}`);
+        revalidatePath('/');
+        revalidatePath('/admin');
+
+    } catch (error) {
+        console.error("Error awarding points:", error);
+        throw new Error("Could not award points.");
     }
 }
 
@@ -175,6 +216,39 @@ export async function getUpcomingEvents(): Promise<AppEvent[]> {
   }
 }
 
+export async function getAllEvents(): Promise<AppEvent[]> {
+    let firestore;
+    try {
+        firestore = getDb();
+    } catch (e) {
+        console.warn("Firestore is not initialized. Returning empty event list.");
+        return [];
+    }
+  
+  try {
+    const eventsCollection = collection(firestore, 'events');
+    const q = query(eventsCollection, orderBy('date', 'desc'));
+    const eventSnapshot = await getDocs(q);
+
+    if (eventSnapshot.empty) {
+      return [];
+    }
+
+    const eventList = eventSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return { 
+            id: doc.id, 
+            ...data,
+            date: data.date instanceof Timestamp ? data.date.toDate().toISOString() : data.date,
+        } as AppEvent
+    });
+    return eventList;
+  } catch (error) {
+    console.error("Error fetching all events from Firestore:", error);
+    return [];
+  }
+}
+
 
 export async function addEvent(event: Omit<AppEvent, 'id'>) {
     const firestore = getDb();
@@ -185,8 +259,22 @@ export async function addEvent(event: Omit<AppEvent, 'id'>) {
             date: Timestamp.fromDate(new Date(event.date)),
         });
         revalidatePath('/'); // Revalidate home page to show new event
+        revalidatePath('/admin');
     } catch (error) {
         console.error("Error adding event:", error);
         throw new Error("Could not add the event.");
+    }
+}
+
+export async function deleteEvent(eventId: string) {
+    const firestore = getDb();
+    try {
+        const eventDocRef = doc(firestore, 'events', eventId);
+        await deleteDoc(eventDocRef);
+        revalidatePath('/');
+        revalidatePath('/admin');
+    } catch (error) {
+        console.error("Error deleting event:", error);
+        throw new Error("Could not delete the event.");
     }
 }

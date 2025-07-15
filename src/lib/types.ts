@@ -1,7 +1,7 @@
 
 
 export interface PointLog {
-  id: number;
+  id?: string;
   date: string;
   description: string;
   points: number;
@@ -42,3 +42,4 @@ export interface LeetCodeDailyProblem {
     link: string;
     question: LeetCodeQuestion;
 }
+
