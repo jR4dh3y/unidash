@@ -1,3 +1,4 @@
+
 import { notFound } from 'next/navigation';
 import { auth } from '@/lib/firebase-config-admin';
 import { cookies } from 'next/headers';
@@ -5,7 +6,7 @@ import { AuthWidget } from '@/components/auth-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Medal } from 'lucide-react';
 
-const ADMIN_UID = 'YOUR_ADMIN_UID_HERE'; 
+const ADMIN_EMAIL = 'admin@admin.com'; 
 
 async function getAuthenticatedUser() {
   if (!auth) return null;
@@ -25,7 +26,7 @@ export default async function AdminPage() {
   const user = await getAuthenticatedUser();
 
   // Basic authorization check
-  if (!user || user.uid !== ADMIN_UID) {
+  if (!user || user.email !== ADMIN_EMAIL) {
     // You can redirect to a custom unauthorized page or the home page
     // For now, we'll just show a 404
     notFound();

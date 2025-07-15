@@ -23,15 +23,14 @@ import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// You can replace this with a more robust admin check, e.g., from a database.
-const ADMIN_UID = 'YOUR_ADMIN_UID_HERE'; 
+const ADMIN_EMAIL = 'admin@admin.com'; 
 
 export function AuthWidget() {
   const { user, loading } = useAuth();
   const { setTheme } = useTheme();
   const router = useRouter();
 
-  const isAdmin = user?.uid === ADMIN_UID;
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   const handleSignOut = async () => {
     try {
