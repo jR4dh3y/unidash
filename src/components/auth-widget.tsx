@@ -76,7 +76,7 @@ export function AuthWidget() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
            <DropdownMenuItem asChild>
-             <Link href="/profile">
+             <Link href={`/student/${user.uid}`}>
                <User className="mr-2 h-4 w-4" />
                <span>My Profile</span>
              </Link>

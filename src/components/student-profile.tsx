@@ -2,9 +2,8 @@
 'use client';
 
 import type { Student } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableHeader,
@@ -14,14 +13,17 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Github, Linkedin, Code, FileText, UserCog, Sparkles, Trophy, ListChecks } from "lucide-react";
+import { Github, Linkedin, Code, FileText, UserCog, Sparkles, Trophy, ListChecks, Edit } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
+import { EditProfileSheet } from "./edit-profile-sheet";
+import { Badge } from "./ui/badge";
 
 interface StudentProfileProps {
   student: Student;
   rank: number;
+  isOwner: boolean;
 }
 
 const sourceIcons: Record<Student['pointsLog'][number]['source'], React.ReactNode> = {
@@ -51,7 +53,7 @@ function PointsChart({ data }: { data: any[] }) {
     );
 }
 
-export function StudentProfile({ student, rank }: StudentProfileProps) {
+export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) {
   const sortedPointsLog = useMemo(() => 
     student.pointsLog 
       ? [...student.pointsLog].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -75,7 +77,15 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
       {/* Left Column - Profile & Stats */}
       <div className="lg:col-span-1 flex flex-col gap-6">
         <Card className="shadow-lg border-none sticky top-8 dark:bg-gray-800">
-          <CardContent className="pt-6 flex flex-col items-center text-center">
+          <CardContent className="pt-6 flex flex-col items-center text-center relative">
+            {isOwner && (
+                <EditProfileSheet student={student}>
+                    <Button variant="outline" size="icon" className="absolute top-4 right-4 h-8 w-8">
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Edit Profile</span>
+                    </Button>
+                </EditProfileSheet>
+            )}
             <Avatar className="w-32 h-32 mb-4 border-4 border-primary/20">
               <AvatarImage src={student.avatar} alt={student.name} data-ai-hint="person portrait" />
               <AvatarFallback className="text-4xl">
@@ -179,13 +189,15 @@ export function StudentProfile({ student, rank }: StudentProfileProps) {
                     </TableCell>
                   </TableRow>
                 ))}
+                 {sortedPointsLog.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={4} className="h-24 text-center">
+                            No point history found.
+                        </TableCell>
+                    </TableRow>
+                )}
               </TableBody>
             </Table>
-             {sortedPointsLog.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
-                    <p>No point history found.</p>
-                </div>
-            )}
           </CardContent>
         </Card>
       </div>
