@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { getStudentById, getAllStudents } from "@/lib/firebase-service";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { StudentProfile } from "@/components/student-profile";
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -11,22 +11,20 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth-provider";
 import type { Student } from '@/lib/types';
 
-interface StudentPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function StudentPage({ params }: StudentPageProps) {
+export default function StudentPage() {
   const { user } = useAuth();
+  const params = useParams();
+  const studentId = params.id as string;
+
   const [student, setStudent] = useState<Student | null>(null);
   const [rank, setRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
+      if (!studentId) return;
       try {
-        const studentData = await getStudentById(params.id);
+        const studentData = await getStudentById(studentId);
         if (!studentData) {
           notFound();
           return;
@@ -47,7 +45,7 @@ export default function StudentPage({ params }: StudentPageProps) {
     }
 
     fetchData();
-  }, [params.id]);
+  }, [studentId]);
 
   if (loading) {
     return (
