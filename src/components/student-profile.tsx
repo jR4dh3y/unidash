@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import type { Student } from "@/lib/types";
+import type { Student, Badge as BadgeType } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -12,14 +13,16 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Github, Linkedin, Code, FileText, UserCog, Sparkles, Trophy, ListChecks, Edit } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { Github, Linkedin, Code, FileText, UserCog, Sparkles, Trophy, ListChecks, Edit, Award, Sword, Flame, BrainCircuit, CalendarCheck } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useMemo } from "react";
+import { useMemo, createElement } from "react";
 import { EditProfileSheet } from "./edit-profile-sheet";
 import { Badge } from "./ui/badge";
 import { format } from 'date-fns';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "./ui/tooltip";
+
 
 interface StudentProfileProps {
   student: Student;
@@ -34,13 +37,29 @@ const sourceIcons: Record<Student['pointsLog'][number]['source'], React.ReactNod
     'GitHub': <Github className="h-4 w-4 text-muted-foreground" />,
 }
 
+const iconMap: { [key: string]: React.ElementType } = {
+  Sword: Sword,
+  Flame: Flame,
+  Trophy: Trophy,
+  BrainCircuit: BrainCircuit,
+  CalendarCheck: CalendarCheck,
+  Award: Award
+};
+
+const BadgeIcon = ({ name, ...props }: { name: string, className?: string }) => {
+  const IconComponent = iconMap[name];
+  if (!IconComponent) return null; // Or return a default icon
+  return createElement(IconComponent, props);
+};
+
+
 function PointsChart({ data }: { data: any[] }) {
     return (
         <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                 <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-                <Tooltip
+                <RechartsTooltip
                     cursor={{ fill: 'hsl(var(--muted))' }}
                     contentStyle={{ 
                         background: 'hsl(var(--background))',
@@ -128,18 +147,22 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
         </Card>
         
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                 <CardTitle className="text-sm font-medium">Rank</CardTitle>
-                 <Trophy className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="pb-2">
+                 <CardTitle className="text-sm font-medium flex items-center justify-between">
+                    <span>Rank</span>
+                    <Trophy className="h-4 w-4 text-muted-foreground" />
+                 </CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">#{rank}</div>
             </CardContent>
         </Card>
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                 <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
-                 <ListChecks className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="pb-2">
+                 <CardTitle className="text-sm font-medium flex items-center justify-between">
+                    <span>Total Submissions</span>
+                    <ListChecks className="h-4 w-4 text-muted-foreground" />
+                 </CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{student.pointsLog.length}</div>
@@ -149,6 +172,39 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
 
       {/* Right Column - Charts & History */}
       <div className="lg:col-span-3 flex flex-col gap-6">
+
+        <Card className="shadow-lg border-none dark:bg-gray-800">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Award className="h-5 w-5" />Achievements</CardTitle>
+                <CardDescription>Badges earned for various accomplishments.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 {(student.achievements && student.achievements.length > 0) ? (
+                    <TooltipProvider>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {student.achievements.map((badge) => (
+                          <Tooltip key={badge.id}>
+                            <TooltipTrigger asChild>
+                              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 border hover:bg-muted transition-colors">
+                                <BadgeIcon name={badge.icon} className="h-10 w-10 text-primary" />
+                                <span className="text-sm font-medium text-center">{badge.name}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{badge.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+                    </TooltipProvider>
+                 ) : (
+                    <div className="flex items-center justify-center h-[100px] text-muted-foreground">
+                        No achievements earned yet.
+                    </div>
+                 )}
+            </CardContent>
+        </Card>
+        
         <Card className="shadow-lg border-none dark:bg-gray-800">
             <CardHeader>
                 <CardTitle>Points by Source</CardTitle>

@@ -1,5 +1,12 @@
 
 
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string; // Icon name from lucide-react or an SVG string
+}
+
 export interface PointLog {
   id?: string;
   date: string;
@@ -16,6 +23,7 @@ export interface Student {
   linkedin?: string;
   totalPoints: number;
   pointsLog: PointLog[];
+  achievements?: Badge[];
 }
 
 export interface AppEvent {
@@ -42,4 +50,3 @@ export interface LeetCodeDailyProblem {
     link: string;
     question: LeetCodeQuestion;
 }
-
