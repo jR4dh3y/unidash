@@ -1,17 +1,26 @@
 
-import { notFound } from 'next/navigation';
+'use client';
+
 import { AuthWidget } from '@/components/auth-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Medal, ShieldAlert } from 'lucide-react';
-import { getAuthenticatedUser } from '@/lib/auth';
+import { ShieldAlert, Loader2 } from 'lucide-react';
 import { AddEventForm } from '@/components/add-event-form';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/auth-provider';
 
 const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2'; 
 
-export default async function AdminPage() {
-  const user = await getAuthenticatedUser();
+export default function AdminPage() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
 
   if (!user || user.uid !== ADMIN_UID) {
     return (
