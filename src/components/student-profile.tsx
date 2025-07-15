@@ -63,10 +63,12 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
   const pointsBySource = useMemo(() => {
     const sourceMap: { [key: string]: number } = {};
     for (const log of student.pointsLog) {
-      if (!sourceMap[log.source]) {
-        sourceMap[log.source] = 0;
+      if (log.source && typeof log.points === 'number' && !isNaN(log.points)) {
+        if (!sourceMap[log.source]) {
+          sourceMap[log.source] = 0;
+        }
+        sourceMap[log.source] += log.points;
       }
-      sourceMap[log.source] += log.points;
     }
     return Object.entries(sourceMap).map(([name, points]) => ({ name, points }));
   }, [student.pointsLog]);
