@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { format } from "date-fns";
+import { getDailyProblem } from "@/lib/leetcode";
+import { Badge } from "@/components/ui/badge";
 
 async function UpcomingEvents() {
   const events: AppEvent[] = await getUpcomingEvents();
@@ -81,19 +83,55 @@ async function UpcomingEvents() {
   );
 }
 
-function LeetCodeCard() {
+async function LeetCodeCard() {
+    const dailyProblem = await getDailyProblem();
+
+    if (!dailyProblem) {
+        return (
+             <Card>
+                <CardHeader>
+                    <CardTitle className="text-2xl font-headline flex items-center gap-2">
+                        <Code className="h-6 w-6 text-primary" />
+                        Today's LeetCode Problem
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                     <div className="flex items-center justify-center h-48 text-muted-foreground">
+                        <p>Could not load problem.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+    
+    const { question } = dailyProblem;
+    const difficultyColors: {[key: string]: string} = {
+        "Easy": "bg-green-500/20 text-green-500 border-green-500/50",
+        "Medium": "bg-yellow-500/20 text-yellow-500 border-yellow-500/50",
+        "Hard": "bg-red-500/20 text-red-500 border-red-500/50",
+    }
+
     return (
-        <Card>
+        <Card className="flex flex-col h-full">
             <CardHeader>
                 <CardTitle className="text-2xl font-headline flex items-center gap-2">
                     <Code className="h-6 w-6 text-primary" />
                     Today's LeetCode Problem
                 </CardTitle>
             </CardHeader>
-            <CardContent>
-                 <div className="flex items-center justify-center h-48 text-muted-foreground">
-                    <p>No problem specified.</p>
+            <CardContent className="flex flex-col flex-grow">
+                 <div className="flex flex-col items-center justify-center text-center flex-grow">
+                    <h3 className="text-xl font-bold mb-2">{question.title}</h3>
+                    <Badge variant="outline" className={difficultyColors[question.difficulty]}>
+                        {question.difficulty}
+                    </Badge>
                 </div>
+                <Button asChild className="mt-6 w-full">
+                    <Link href={`https://leetcode.com${dailyProblem.link}`} target="_blank" rel="noopener noreferrer">
+                        Solve Problem
+                        <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
             </CardContent>
         </Card>
     );

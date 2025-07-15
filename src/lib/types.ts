@@ -1,3 +1,4 @@
+
 export interface PointLog {
   id: number;
   date: string;
@@ -23,4 +24,20 @@ export interface AppEvent {
   description: string;
   location?: string;
   link?: string;
+}
+
+export interface LeetCodeQuestion {
+    acRate: number;
+    difficulty: 'Easy' | 'Medium' | 'Hard';
+    frontendQuestionId: string;
+    title: string;
+    titleSlug: string;
+    paidOnly: boolean;
+    topicTags: { name: string; slug: string }[];
+}
+
+export interface LeetCodeDailyProblem {
+    date: string;
+    link: string;
+    question: LeetCodeQuestion;
 }
