@@ -22,7 +22,7 @@ export async function studentCoach(input: StudentCoachInput): Promise<StudentCoa
 const prompt = ai.definePrompt({
   name: 'studentCoachPrompt',
   input: { schema: StudentCoachInputSchema },
-  output: { schema: StudentCoachOutputSchema },
+  // output: { schema: StudentCoachOutputSchema }, // Removing strict output validation to handle nulls
   model: 'googleai/gemini-2.0-flash',
   prompt: `You are a friendly and encouraging Developer Coach for students learning to code. Your goal is to provide helpful, clear, and motivating advice. Do not give direct code solutions unless specifically asked, but instead guide the student to discover the solution themselves.
 
