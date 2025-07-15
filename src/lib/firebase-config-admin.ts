@@ -19,10 +19,6 @@ try {
     });
     auth = admin.auth();
     db = admin.firestore();
-  } else if (!hasAllCredentials) {
-    console.warn(
-      'Firebase Admin credentials are not fully set in environment variables. Admin features will be disabled.'
-    );
   } else if (admin.apps.length > 0 && admin.app()) {
     auth = admin.auth();
     db = admin.firestore();
