@@ -1,7 +1,7 @@
 
 'use client';
 
-import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase-config';
 import { useAuth } from './auth-provider';
 import { Button } from './ui/button';
@@ -21,6 +21,7 @@ import {
 import { LogIn, LogOut, Loader2, Moon, Sun, Monitor, Shield } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // You can replace this with a more robust admin check, e.g., from a database.
 const ADMIN_UID = 'YOUR_ADMIN_UID_HERE'; 
@@ -28,21 +29,14 @@ const ADMIN_UID = 'YOUR_ADMIN_UID_HERE';
 export function AuthWidget() {
   const { user, loading } = useAuth();
   const { setTheme } = useTheme();
+  const router = useRouter();
 
   const isAdmin = user?.uid === ADMIN_UID;
-
-  const handleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error('Error signing in with Google: ', error);
-    }
-  };
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      router.push('/'); // Redirect to home on sign out
     } catch (error) {
       console.error('Error signing out: ', error);
     }
@@ -126,9 +120,11 @@ export function AuthWidget() {
   }
 
   return (
-    <Button onClick={handleSignIn}>
-      <LogIn className="mr-2 h-4 w-4" />
-      Sign In
+    <Button asChild>
+      <Link href="/login">
+        <LogIn className="mr-2 h-4 w-4" />
+        Sign In
+      </Link>
     </Button>
   );
 }
