@@ -7,12 +7,12 @@ export async function getAuthenticatedUser() {
     try {
         const token = cookies().get('token')?.value;
         if (!token) return null;
-        const decodedToken = await auth.verifyIdToken(token);
+        const decodedToken = await auth.verifySessionCookie(token, true /** checkRevoked */);
         return decodedToken;
     } catch (error) {
         // This can happen if the token is expired or invalid.
         // It's a normal part of the auth flow.
-        console.log('Token verification failed:', (error as Error).message);
+        console.log('Session cookie verification failed:', (error as Error).message);
         return null;
     }
 }

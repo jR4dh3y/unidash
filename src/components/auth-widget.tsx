@@ -1,7 +1,7 @@
 
 'use client';
 
-import { signOut } from 'firebase/auth';
+import { signOut as firebaseSignOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase-config';
 import { useAuth } from './auth-provider';
 import { Button } from './ui/button';
@@ -34,7 +34,10 @@ export function AuthWidget() {
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      // Sign out from Firebase client
+      await firebaseSignOut(auth);
+      // Sign out from server session
+      await fetch('/api/auth/session', { method: 'DELETE' });
       router.push('/'); // Redirect to home on sign out
     } catch (error) {
       console.error('Error signing out: ', error);
