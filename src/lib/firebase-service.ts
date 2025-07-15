@@ -1,8 +1,9 @@
 
+
 'use server';
 
 import { db } from './firebase-config';
-import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc, setDoc, addDoc, deleteDoc, serverTimestamp, increment } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, where, limit, Timestamp, updateDoc, setDoc, addDoc, deleteDoc, increment, arrayUnion } from 'firebase/firestore';
 import type { Student, AppEvent, PointLog } from './types';
 import { revalidatePath } from 'next/cache';
 
@@ -151,9 +152,6 @@ export async function awardPoints(userId: string, points: number, reason: string
             throw new Error("Student not found.");
         }
 
-        const studentData = studentSnap.data();
-        const currentPointsLog = studentData.pointsLog || [];
-
         const newLogEntry: Omit<PointLog, 'id'> = {
             date: new Date().toISOString(),
             description: reason,
@@ -163,7 +161,7 @@ export async function awardPoints(userId: string, points: number, reason: string
 
         await updateDoc(studentDocRef, {
             totalPoints: increment(points),
-            pointsLog: [...currentPointsLog, newLogEntry]
+            pointsLog: arrayUnion(newLogEntry)
         });
 
         revalidatePath(`/student/${userId}`);
