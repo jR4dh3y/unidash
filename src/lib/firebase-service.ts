@@ -1,6 +1,5 @@
 
 
-
 'use server';
 
 import { db } from './firebase-config';
@@ -9,101 +8,6 @@ import type { Student, AppEvent, PointLog, Badge } from './types';
 import { revalidatePath } from 'next/cache';
 
 const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2';
-
-const allBadges: Record<string, Badge> = {
-    'first-problem': { id: 'first-problem', name: 'First Blood', description: 'Solved your first problem.', icon: 'Sword' },
-    'weekly-streak-1': { id: 'weekly-streak-1', name: 'Streak Starter', description: 'Maintained a 1-week solving streak.', icon: 'Flame' },
-    'top-10': { id: 'top-10', name: 'Top 10 Finisher', description: 'Ranked in the Top 10.', icon: 'Trophy' },
-    'hard-problem': { id: 'hard-problem', name: 'Brainiac', description: 'Solved a Hard-difficulty problem.', icon: 'BrainCircuit' },
-    'event-attendee': { id: 'event-attendee', name: 'Social Butterfly', description: 'Attended a community event.', icon: 'CalendarCheck' },
-};
-
-
-const tempStudents: Student[] = [
-    {
-        id: 'temp-1',
-        name: 'Olivia Chen',
-        avatar: 'https://placehold.co/200x200.png',
-        github: 'https://github.com/oliviac',
-        linkedin: 'https://linkedin.com/in/oliviac',
-        totalPoints: 1550,
-        pointsLog: [
-            { id: 'log-1-1', date: '2024-07-20T10:00:00Z', description: 'Solved LeetCode daily problem', points: 50, source: 'LeetCode' },
-            { id: 'log-1-2', date: '2024-07-19T11:00:00Z', description: 'Peer review session', points: 100, source: 'Manual Allocation' },
-            { id: 'log-1-3', date: '2024-07-18T15:30:00Z', description: 'Merged PR for new feature', points: 200, source: 'GitHub' },
-            { id: 'log-1-4', date: '2024-07-15T09:00:00Z', description: 'Tech talk presentation', points: 500, source: 'Google Form' },
-            { id: 'log-1-5', date: '2024-07-10T14:00:00Z', description: 'Won monthly coding challenge', points: 700, source: 'Manual Allocation' }
-        ],
-        achievements: [allBadges['top-10'], allBadges['hard-problem'], allBadges['weekly-streak-1'], allBadges['event-attendee']],
-    },
-    {
-        id: 'temp-2',
-        name: 'Benjamin Carter',
-        avatar: 'https://placehold.co/200x200.png',
-        totalPoints: 1400,
-        pointsLog: [
-            { id: 'log-2-1', date: '2024-07-21T10:00:00Z', description: 'Solved LeetCode daily problem', points: 50, source: 'LeetCode' },
-            { id: 'log-2-2', date: '2024-07-18T11:00:00Z', description: 'Helped a junior developer', points: 150, source: 'Manual Allocation' },
-            { id: 'log-2-3', date: '2024-07-17T15:30:00Z', description: 'Refactored legacy code', points: 250, source: 'GitHub' },
-            { id: 'log-2-4', date: '2024-07-16T09:00:00Z', description: 'Workshop attendance', points: 200, source: 'Google Form' },
-            { id: 'log-2-5', date: '2024-07-12T14:00:00Z', description: 'Project milestone completion', points: 750, source: 'Manual Allocation' }
-        ],
-        achievements: [allBadges['top-10'], allBadges['event-attendee'], allBadges['first-problem']],
-    },
-    {
-        id: 'temp-3',
-        name: 'Sophia Rodriguez',
-        avatar: 'https://placehold.co/200x200.png',
-        totalPoints: 1250,
-        pointsLog: [
-            { id: 'log-3-1', date: '2024-07-22T10:00:00Z', description: 'Solved LeetCode daily problem', points: 50, source: 'LeetCode' },
-            { id: 'log-3-2', date: '2024-07-20T11:00:00Z', description: 'Bug fix contribution', points: 100, source: 'GitHub' },
-            { id: 'log-3-3', date: '2024-07-19T09:00:00Z', description: 'Quiz completion', points: 300, source: 'Google Form' },
-            { id: 'log-3-4', date: '2024-07-14T14:00:00Z', description: 'Hackathon participation', points: 800, source: 'Manual Allocation' }
-        ],
-        achievements: [allBadges['top-10'], allBadges['first-problem']],
-    },
-    {
-        id: 'temp-4',
-        name: 'Liam Goldberg',
-        avatar: 'https://placehold.co/200x200.png',
-        totalPoints: 1100,
-        pointsLog: [
-            { id: 'log-4-1', date: '2024-07-19T10:00:00Z', description: 'Solved LeetCode daily problem', points: 50, source: 'LeetCode' },
-            { id: 'log-4-2', date: '2024-07-17T11:00:00Z', description: 'Documentation improvements', points: 150, source: 'GitHub' },
-            { id: 'log-4-3', date: '2024-07-16T15:30:00Z', description: 'Code challenge submission', points: 400, source: 'Google Form' },
-            { id: 'log-4-4', date: '2024-07-11T14:00:00Z', description: 'Side project showcase', points: 500, source: 'Manual Allocation' }
-        ],
-        achievements: [allBadges['top-10'], allBadges['weekly-streak-1']],
-    },
-    {
-        id: 'temp-5',
-        name: 'Ava Nguyen',
-        avatar: 'https://placehold.co/200x200.png',
-        totalPoints: 950,
-        pointsLog: [
-            { id: 'log-5-1', date: '2024-07-18T10:00:00Z', description: 'Solved LeetCode daily problem', points: 50, source: 'LeetCode' },
-            { id: 'log-5-2', date: '2024-07-15T11:00:00Z', description: 'Created a new component', points: 300, source: 'GitHub' },
-            { id: 'log-5-3', date: '2024-07-12T09:00:00Z', description: 'Submitted weekly report', points: 100, source: 'Google Form' },
-            { id: 'log-5-4', date: '2024-07-10T14:00:00Z', description: 'Mentorship program participation', points: 500, source: 'Manual Allocation' }
-        ],
-        achievements: [allBadges['first-problem']],
-    },
-    {
-        id: 'temp-6',
-        name: 'Noah Kim',
-        avatar: 'https://placehold.co/200x200.png',
-        totalPoints: 800,
-        pointsLog: [
-            { id: 'log-6-1', date: '2024-07-17T10:00:00Z', description: 'Solved LeetCode daily problem', points: 50, source: 'LeetCode' },
-            { id: 'log-6-2', date: '2024-07-14T11:00:00Z', description: 'Fixed a critical bug', points: 250, source: 'GitHub' },
-            { id: 'log-6-3', date: '2024-07-11T09:00:00Z', description: 'Attended training session', points: 100, source: 'Google Form' },
-            { id: 'log-6-4', date: '2024-07-09T14:00:00Z', description: 'Team collaboration award', points: 400, source: 'Manual Allocation' }
-        ],
-        achievements: [allBadges['event-attendee']],
-    }
-].sort((a, b) => b.totalPoints - a.totalPoints);
-
 
 // A helper to get the database instance and handle initialization errors
 function getDb() {
@@ -143,10 +47,6 @@ export async function createStudent(userId: string, name: string) {
 
 
 export async function getAllStudents(): Promise<Student[]> {
-    // --- TEMPORARY DATA ---
-    return Promise.resolve(tempStudents);
-    // --- END TEMPORARY DATA ---
-
   let firestore;
   try {
      firestore = getDb();
@@ -190,11 +90,6 @@ export async function getAllStudents(): Promise<Student[]> {
 }
 
 export async function getStudentById(id: string): Promise<Student | null> {
-    // --- TEMPORARY DATA ---
-    const student = tempStudents.find(s => s.id === id) || null;
-    return Promise.resolve(student);
-    // --- END TEMPORARY DATA ---
-
   const firestore = getDb();
 
   try {
