@@ -65,9 +65,10 @@ export async function getAllStudents(): Promise<Student[]> {
 
     const studentList = studentSnapshot.docs.map(doc => {
         const data = doc.data();
-        const pointsLog = data.pointsLog ? data.pointsLog.map((log: any) => ({
+        const pointsLog = Array.isArray(data.pointsLog) ? data.pointsLog.map((log: any) => ({
             ...log,
-            date: log.date instanceof Timestamp ? log.date.toDate().toISOString() : log.date,
+            // Ensure date is always a string
+            date: log.date instanceof Timestamp ? log.date.toDate().toISOString() : String(log.date || ''),
         })) : [];
 
         return { 
@@ -94,15 +95,16 @@ export async function getStudentById(id: string): Promise<Student | null> {
     const studentSnap = await getDoc(studentDocRef);
 
     if (studentSnap.exists()) {
-      const studentData = studentSnap.data();
-      const pointsLog = studentData.pointsLog ? studentData.pointsLog.map((log: any) => ({
+      const data = studentSnap.data();
+      const pointsLog = Array.isArray(data.pointsLog) ? data.pointsLog.map((log: any) => ({
         ...log,
-        date: log.date instanceof Timestamp ? log.date.toDate().toISOString() : log.date,
+        // Ensure date is always a string
+        date: log.date instanceof Timestamp ? log.date.toDate().toISOString() : String(log.date || ''),
       })) : [];
 
       return { 
         id: studentSnap.id, 
-        ...studentData,
+        ...data,
         pointsLog
       } as Student;
     } else {
