@@ -23,15 +23,13 @@ const prompt = ai.definePrompt({
   name: 'studentCoachPrompt',
   input: { schema: StudentCoachInputSchema },
   output: { schema: StudentCoachOutputSchema },
+  model: 'googleai/gemini-2.0-flash',
   prompt: `You are a friendly and encouraging Developer Coach for students learning to code. Your goal is to provide helpful, clear, and motivating advice. Do not give direct code solutions unless specifically asked, but instead guide the student to discover the solution themselves.
 
 Here is the student's question or problem:
 "{{{input}}}"
 
 Provide a concise, helpful, and encouraging response. Think step-by-step. Break down complex topics into smaller, manageable pieces. If they seem frustrated, offer words of encouragement.`,
-  config: {
-    model: 'googleai/gemini-2.0-flash'
-  }
 });
 
 const studentCoachFlow = ai.defineFlow(
