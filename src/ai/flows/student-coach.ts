@@ -40,6 +40,9 @@ const studentCoachFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await prompt(input);
-    return output!;
+    if (output === null) {
+        return "I'm sorry, I'm having trouble coming up with a response right now. Could you please try rephrasing your question?";
+    }
+    return output;
   }
 );
