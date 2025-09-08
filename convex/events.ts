@@ -1,21 +1,14 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
-export const getUpcomingEvents = query({
-  handler: async (ctx) => {
-    const today = new Date().toISOString();
-    return await ctx.db
-      .query("events")
-      .filter((q) => q.gte(q.field("date"), today))
-      .order("asc")
-      .take(5);
-  },
-});
-
-export const deleteEvent = mutation({
-  args: { id: v.id("events") },
-  handler: async (ctx, args) => {
-    await ctx.db.delete(args.id);
+export const getAllEvents = query({
+  args: {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: async (ctx: any) => {
+    const events = await ctx.db.query("events").collect();
+    return (events as any[])
+      .map((e: any) => ({ id: e._id, title: e.title, date: e.date, description: e.description, location: e.location, link: e.link }))
+      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
   },
 });
 
@@ -27,13 +20,18 @@ export const addEvent = mutation({
     location: v.optional(v.string()),
     link: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    await ctx.db.insert("events", args);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: async (ctx: any, args: any) => {
+    const id = await ctx.db.insert("events", args);
+    return id;
   },
 });
 
-export const getAllEvents = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("events").order("desc").collect();
+export const deleteEvent = mutation({
+  args: { id: v.id("events") },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: async (ctx: any, { id }: any) => {
+    await ctx.db.delete(id);
+    return true;
   },
 });

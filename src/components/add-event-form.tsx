@@ -42,7 +42,7 @@ const formSchema = z.object({
 
 export function AddEventForm() {
     const { toast } = useToast();
-    const addEvent = useMutation(api.events.addEvent);
+    const addEventMutation = useMutation(api.events.addEvent);
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -55,9 +55,12 @@ export function AddEventForm() {
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
-            await addEvent({
-                ...values,
+            await addEventMutation({
+                title: values.title,
+                description: values.description,
                 date: values.date.toISOString(),
+                location: values.location || undefined,
+                link: values.link || undefined,
             });
             toast({
                 title: "Event Created!",
@@ -88,7 +91,7 @@ export function AddEventForm() {
                                 <FormItem>
                                     <FormLabel>Event Title</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="e.g., Tech Talk Tuesday" {...field} />
+                                        <Input placeholder="e.g., Tech Talk" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

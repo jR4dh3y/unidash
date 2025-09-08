@@ -16,9 +16,17 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from '@/components/ui/skeleton';
 
 function UpcomingEvents() {
-  const events = useQuery(api.events.getUpcomingEvents);
+  const [events, setEvents] = useState<AppEvent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (events === undefined) {
+  const eventsData = useQuery(api.events.getAllEvents);
+  useEffect(() => {
+    if (eventsData === undefined) return;
+    setEvents(eventsData || []);
+    setLoading(false);
+  }, [eventsData]);
+
+  if (loading) {
     return (
        <Card>
         <CardHeader>
@@ -192,9 +200,16 @@ function LeetCodeCard() {
 }
 
 function MainLeaderboard() {
-  const students = useQuery(api.students.getAllStudents);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const studentsData = useQuery(api.students.getAllStudents) as Student[] | undefined;
+  useEffect(() => {
+    if (studentsData === undefined) return;
+    setStudents(studentsData || []);
+    setLoading(false);
+  }, [studentsData]);
 
-  if (students === undefined) {
+  if (loading) {
      return (
         <Card>
             <CardHeader>

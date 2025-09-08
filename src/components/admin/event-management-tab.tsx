@@ -33,9 +33,10 @@ import {
 
 interface EventManagementTabProps {
     events: AppEvent[];
+    isLoading?: boolean;
 }
 
-export function EventManagementTab({ events }: EventManagementTabProps) {
+export function EventManagementTab({ events, isLoading = false }: EventManagementTabProps) {
     const { toast } = useToast();
     const deleteEvent = useMutation(api.events.deleteEvent);
 
@@ -67,6 +68,11 @@ export function EventManagementTab({ events }: EventManagementTabProps) {
                         <CardDescription>View and manage all upcoming and past events.</CardDescription>
                     </CardHeader>
                     <CardContent>
+                        {isLoading ? (
+                             <div className="flex justify-center items-center h-48">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            </div>
+                        ) : (
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -78,7 +84,7 @@ export function EventManagementTab({ events }: EventManagementTabProps) {
                             </TableHeader>
                             <TableBody>
                                 {events.map((event) => (
-                                    <TableRow key={event._id}>
+                                    <TableRow key={event.id}>
                                         <TableCell className="font-medium">{event.title}</TableCell>
                                         <TableCell>{format(new Date(event.date), "PPP")}</TableCell>
                                         <TableCell>
@@ -102,7 +108,7 @@ export function EventManagementTab({ events }: EventManagementTabProps) {
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(event._id)} className="bg-destructive hover:bg-destructive/90">
+                                                    <AlertDialogAction onClick={() => handleDelete(event.id)} className="bg-destructive hover:bg-destructive/90">
                                                         Delete
                                                     </AlertDialogAction>
                                                     </AlertDialogFooter>
@@ -120,6 +126,7 @@ export function EventManagementTab({ events }: EventManagementTabProps) {
                                 )}
                             </TableBody>
                         </Table>
+                        )}
                     </CardContent>
                 </Card>
             </div>

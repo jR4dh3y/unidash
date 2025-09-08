@@ -1,141 +1,228 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
-export const createStudent = mutation({
-  args: {
-    userId: v.string(),
-    name: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const existingStudent = await ctx.db
-      .query("students")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .unique();
+// achievement rules based on points and activity.
+function computeAchievements(student: {
+  totalPoints: number;
+  pointsLog: Array<{ points: number; source: string }>;
+}) {
+  const achievements: Array<{ id: string; name: string; description: string; icon: string }> = [];
 
-    if (existingStudent) {
-      return;
-    }
+  const totalPoints = student.totalPoints ?? 0;
+  const totalActivities = (student.pointsLog ?? []).length;
+  const fromLeetCode = (student.pointsLog ?? []).some((l) => l.source === "LeetCode");
+  const fromGitHub = (student.pointsLog ?? []).some((l) => l.source === "GitHub");
 
-    await ctx.db.insert("students", {
-      userId: args.userId,
-      name: args.name,
-      avatar: `https://placehold.co/200x200.png`,
-      totalPoints: 0,
-      pointsLog: [],
-      achievements: [],
+  if (totalActivities >= 1) {
+    achievements.push({
+      id: "ach_first",
+      name: "First Submission",
+      description: "Logged your first points!",
+      icon: "Award",
     });
+  }
+  if (totalPoints >= 500) {
+    achievements.push({
+      id: "ach_500",
+      name: "500 Club",
+      description: "Reached 500 total points.",
+      icon: "Flame",
+    });
+  }
+  if (totalPoints >= 1000) {
+    achievements.push({
+      id: "ach_1000",
+      name: "1,000 Club",
+      description: "Cracked 1,000 total points.",
+      icon: "Trophy",
+    });
+  }
+  if (fromLeetCode) {
+    achievements.push({
+      id: "ach_lc",
+      name: "Code Warrior",
+      description: "Earned points from LeetCode.",
+      icon: "Sword",
+    });
+  }
+  if (fromGitHub) {
+    achievements.push({
+      id: "ach_gh",
+      name: "Brainstormer",
+      description: "Earned points from GitHub activity.",
+      icon: "BrainCircuit",
+    });
+  }
+
+  return achievements;
+}
+
+export const getAllStudents = query({
+  args: {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: async (ctx: any) => {
+    const docs = await ctx.db.query("students").collect();
+    const sorted = docs.sort((a: any, b: any) => (b.totalPoints ?? 0) - (a.totalPoints ?? 0));
+    return sorted.map((s: any) => ({
+      id: s.userId,
+      name: s.name,
+      avatar: s.avatar,
+      github: s.github,
+      linkedin: s.linkedin,
+      totalPoints: s.totalPoints ?? 0,
+      pointsLog: s.pointsLog ?? [],
+      achievements:
+        s.achievements && Array.isArray(s.achievements) && s.achievements.length > 0
+          ? s.achievements
+          : computeAchievements({ totalPoints: s.totalPoints ?? 0, pointsLog: s.pointsLog ?? [] }),
+    }));
   },
 });
 
-export const seedDatabase = mutation({
-  handler: async (ctx) => {
-    const tempStudents = [
-      {
-        userId: "1",
-        name: "Alice Johnson",
-        avatar: "https://placehold.co/100x100.png",
-        totalPoints: 1250,
-        github: "https://github.com/alice",
-        linkedin: "https://linkedin.com/in/alice",
-        pointsLog: [
-          { date: "2024-07-01T10:00:00Z", description: "Solved LeetCode daily", points: 50, source: 'LeetCode' as const },
-          { date: "2024-07-02T11:00:00Z", description: "Workshop attendance", points: 200, source: 'Google Form' as const },
-          { date: "2024-07-03T14:00:00Z", description: "Hackathon 1st place", points: 1000, source: 'Manual Allocation' as const },
-        ],
-        achievements: [
-            { id: 'b1', name: 'First Kill', description: 'Solved first LeetCode problem', icon: 'Sword' },
-            { id: 'b2', name: 'Top 10', description: 'Reached the Top 10 on the leaderboard', icon: 'Trophy' },
-            { id: 'b3', name: 'Hot Streak', description: 'Completed a 7-day solving streak', icon: 'Flame' },
-        ],
-      },
-      {
-        userId: "2",
-        name: "Bob Williams",
-        avatar: "https://placehold.co/100x100.png",
-        totalPoints: 980,
-        pointsLog: [
-          { date: "2024-07-01T09:00:00Z", description: "Tech quiz winner", points: 150, source: 'Manual Allocation' as const },
-          { date: "2024-07-04T12:00:00Z", description: "Solved LeetCode daily", points: 50, source: 'LeetCode' as const },
-        ],
-        achievements: [
-            { id: 'b1', name: 'First Kill', description: 'Solved first LeetCode problem', icon: 'Sword' },
-            { id: 'b4', name: 'Big Brain', description: 'Solved a "Hard" problem', icon: 'BrainCircuit' },
-        ],
-      },
-    ];
-
-    for (const student of tempStudents) {
-      await ctx.db.insert("students", student);
-    }
-  },
-});
-
-export const awardPoints = mutation({
-  args: {
-    userId: v.string(),
-    points: v.number(),
-    reason: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const student = await ctx.db
-      .query("students")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .unique();
-
-    if (!student) {
-      throw new Error("Student not found.");
-    }
-
-    const newLogEntry = {
-      date: new Date().toISOString(),
-      description: args.reason,
-      points: args.points,
-      source: "Manual Allocation" as const,
+export const getStudentById = query({
+  args: { id: v.string() },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: async (ctx: any, { id }: any) => {
+    const doc = (await ctx.db.query("students").collect()).find((d: any) => d.userId === id);
+    if (!doc) return null;
+    return {
+      id: doc.userId,
+      name: doc.name,
+      avatar: doc.avatar,
+      github: doc.github,
+      linkedin: doc.linkedin,
+      totalPoints: doc.totalPoints ?? 0,
+      pointsLog: doc.pointsLog ?? [],
+      achievements:
+        doc.achievements && Array.isArray(doc.achievements) && doc.achievements.length > 0
+          ? doc.achievements
+          : computeAchievements({ totalPoints: doc.totalPoints ?? 0, pointsLog: doc.pointsLog ?? [] }),
     };
-
-    await ctx.db.patch(student._id, {
-      totalPoints: student.totalPoints + args.points,
-      pointsLog: [...student.pointsLog, newLogEntry],
-    });
   },
 });
 
 export const updateStudentProfile = mutation({
   args: {
-    userId: v.string(),
-    name: v.optional(v.string()),
+    id: v.string(),
+    name: v.string(),
     github: v.optional(v.string()),
     linkedin: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const student = await ctx.db
-      .query("students")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .unique();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: async (ctx: any, { id, name, github, linkedin }: any) => {
+    const doc = (await ctx.db.query("students").collect()).find((d: any) => d.userId === id);
+    if (!doc) return null;
+    await ctx.db.patch(doc._id, { name, github, linkedin });
+    return true;
+  },
+});
 
-    if (!student) {
-      throw new Error("Student not found.");
+export const awardPoints = mutation({
+  args: { id: v.string(), points: v.number(), reason: v.string() },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: async (ctx: any, { id, points, reason }: any) => {
+    const doc = (await ctx.db.query("students").collect()).find((d: any) => d.userId === id);
+    if (!doc) return null;
+    const newLog = [
+      ...((doc.pointsLog ?? []) as any[]),
+      {
+        id: (globalThis as any).crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        date: new Date().toISOString(),
+        description: reason,
+        points,
+        source: "Manual Allocation" as const,
+      },
+    ];
+    const newTotal = (doc.totalPoints ?? 0) + points;
+    const newAchievements = computeAchievements({ totalPoints: newTotal, pointsLog: newLog });
+    await ctx.db.patch(doc._id, {
+      totalPoints: newTotal,
+      pointsLog: newLog,
+      achievements: newAchievements,
+    });
+    return true;
+  },
+});
+
+export const seedDatabase = mutation({
+  args: {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: async (ctx: any) => {
+    const existing = await ctx.db.query("students").collect();
+    const sample = [
+      {
+        userId: "u_01",
+        name: "Olivia Chen",
+        avatar: "https://i.pravatar.cc/150?img=1",
+        totalPoints: 1200,
+        pointsLog: [
+          {
+            id: "s1",
+            date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+            description: "Daily LeetCode challenge",
+            points: 50,
+            source: "LeetCode" as const,
+          },
+          {
+            id: "s2",
+            date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
+            description: "Project PR merged",
+            points: 100,
+            source: "GitHub" as const,
+          },
+          {
+            id: "s3",
+            date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
+            description: "Hackathon winner",
+            points: 200,
+            source: "Manual Allocation" as const,
+          },
+        ],
+      },
+      {
+        userId: "u_02",
+        name: "Benjamin Carter",
+        avatar: "https://i.pravatar.cc/150?img=2",
+        totalPoints: 980,
+        pointsLog: [
+          {
+            id: "s4",
+            date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
+            description: "Form submission for workshop",
+            points: 30,
+            source: "Google Form" as const,
+          },
+          {
+            id: "s5",
+            date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+            description: "LeetCode weekly contest",
+            points: 150,
+            source: "LeetCode" as const,
+          },
+        ],
+      },
+  ] as any[];
+    let added = 0;
+    for (const s of sample as any[]) {
+      const found = existing.find((d: any) => d.userId === s.userId);
+      const achievements = computeAchievements({
+        totalPoints: s.totalPoints,
+        pointsLog: s.pointsLog,
+      });
+      if (!found) {
+        await ctx.db.insert("students", { ...(s as any), achievements } as any);
+        added++;
+      } else {
+        const hasHistory = Array.isArray(found.pointsLog) && found.pointsLog.length > 0;
+        const hasAchievements = Array.isArray(found.achievements) && found.achievements.length > 0;
+        if (!hasHistory || !hasAchievements) {
+          await ctx.db.patch(found._id, {
+            pointsLog: hasHistory ? found.pointsLog : (s.pointsLog as any[]),
+            achievements: hasAchievements ? found.achievements : achievements,
+          });
+        }
+      }
     }
-
-    const { userId, ...rest } = args;
-
-    await ctx.db.patch(student._id, rest);
-  },
-});
-
-export const getStudentById = query({
-  args: { id: v.id("students") },
-  handler: async (ctx, args) => {
-    const student = await ctx.db.get(args.id);
-    return student;
-  },
-});
-
-const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2';
-
-export const getAllStudents = query({
-  handler: async (ctx) => {
-    const students = await ctx.db.query("students").order("desc").collect();
-    return students.filter((student) => student.userId !== ADMIN_UID);
+    return added;
   },
 });

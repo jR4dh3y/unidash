@@ -1,9 +1,7 @@
 
 'use client';
 
-import { signOut as firebaseSignOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase-config';
-import { useAuth } from './auth-provider';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
@@ -23,28 +21,22 @@ import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2'; 
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
 export function AuthWidget() {
-  const { user, loading } = useAuth();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const { setTheme } = useTheme();
   const router = useRouter();
 
-  const isAdmin = user?.uid === ADMIN_UID;
+  const isAdmin = user?.id === ADMIN_UID;
 
   const handleSignOut = async () => {
-    try {
-      // Sign out from Firebase client
-      await firebaseSignOut(auth);
-      // Sign out from server session
-      await fetch('/api/auth/session', { method: 'DELETE' });
-      router.push('/'); // Redirect to home on sign out
-    } catch (error) {
-      console.error('Error signing out: ', error);
-    }
+    await signOut();
+    router.push('/');
   };
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <Button variant="ghost" size="icon" disabled>
         <Loader2 className="h-5 w-5 animate-spin" />
@@ -58,9 +50,9 @@ export function AuthWidget() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} data-ai-hint="person avatar" />
+              <AvatarImage src={user.imageUrl || ''} alt={user.fullName || 'User'} data-ai-hint="person avatar" />
               <AvatarFallback>
-                {user.displayName?.charAt(0) || user.email?.charAt(0)}
+                {user.fullName?.charAt(0) || user.primaryEmailAddress?.emailAddress?.charAt(0)}
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -69,16 +61,16 @@ export function AuthWidget() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {user.displayName}
+                {user.fullName}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
-                {user.email}
+                {user.primaryEmailAddress?.emailAddress}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
            <DropdownMenuItem asChild>
-             <Link href={`/student/${user.uid}`}>
+             <Link href={`/student/${user.id}`}>
                <User className="mr-2 h-4 w-4" />
                <span>My Profile</span>
              </Link>
@@ -129,7 +121,7 @@ export function AuthWidget() {
 
   return (
     <Button asChild>
-      <Link href="/login">
+  <Link href="/sign-in">
         <LogIn className="mr-2 h-4 w-4" />
         Sign In
       </Link>

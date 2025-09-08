@@ -1,32 +1,20 @@
 
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase-config';
+import { createContext, useContext, ReactNode } from 'react';
 
+// Deprecated Firebase Auth context. No-op to keep legacy imports compiling.
+type DeprecatedAuthUser = { uid: string } | null;
 interface AuthContextType {
-  user: User | null;
+  user: DeprecatedAuthUser;
   loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ user: null, loading: false });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user: null, loading: false }}>
       {children}
     </AuthContext.Provider>
   );

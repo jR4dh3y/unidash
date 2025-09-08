@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <!-- Use site primary/accent orange tones -->
+      <stop offset="0%" stop-color="hsl(25, 95%, 56%)"/>
+      <stop offset="100%" stop-color="hsl(25, 95%, 48%)"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#g)" filter="url(#shadow)"/>
+  <!-- Stylized 1 -->
+  <g transform="rotate(180 256 256)">
+    <g transform="translate(256 256) scale(-1 1) translate(-256 -256)">
+      <path d="M276 120c-10 0-18 8-18 18v188l-40-24c-8-5-19-2-24 6s-2 19 6 24l64 38c3 2 7 3 11 3 3 0 6-1 9-2 6-3 10-10 10-17V138c0-10-8-18-18-18z" fill="#ffffff"/>
+    </g>
+  </g>
+  <!-- Small star/spark for a trophy/achievement vibe -->
+  <g transform="translate(368 128) scale(0.9)" fill="#ffffff" opacity="0.9">
+    <path d="M24 0l6 14 14 6-14 6-6 14-6-14-14-6 14-6 6-14z"/>
+  </g>
+</svg>

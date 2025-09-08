@@ -10,6 +10,9 @@ import { ConvexClientProvider } from './ConvexClientProvider';
 export const metadata: Metadata = {
   title: '1board',
   description: 'The Ultimate Leaderboard Experience',
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

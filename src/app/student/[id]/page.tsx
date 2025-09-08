@@ -9,20 +9,33 @@ import { StudentProfile } from "@/components/student-profile";
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@clerk/nextjs";
-import type { Doc } from 'convex/_generated/dataModel';
+import { useUser } from '@clerk/nextjs';
+import type { Student } from '@/lib/types';
 
 export default function StudentPage() {
-  const { userId } = useAuth();
+  const { user } = useUser();
   const params = useParams();
   const studentId = params.id as string;
 
-  const student = useQuery(api.students.getStudentById, { id: studentId });
+  const [student, setStudent] = useState<Student | null>(null);
+  const [rank, setRank] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const studentData = useQuery(api.students.getStudentById, studentId ? { id: studentId } : 'skip');
   const allStudents = useQuery(api.students.getAllStudents);
+  useEffect(() => {
+    if (!studentId || studentData === undefined || allStudents === undefined) return;
+    if (!studentData) {
+      notFound();
+      return;
+    }
+    const r = allStudents.findIndex((s: Student) => s.id === studentData.id) + 1;
+    setStudent(studentData as Student);
+    setRank(r);
+    setLoading(false);
+  }, [studentId, studentData, allStudents]);
 
-  const rank = allStudents?.findIndex(s => s._id === student?._id) + 1;
-
-  if (student === undefined || allStudents === undefined) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -35,7 +48,7 @@ export default function StudentPage() {
     return notFound();
   }
 
-  const isOwner = userId === student.userId;
+  const isOwner = user?.id === student.id;
 
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-gray-900 dark:text-gray-100">
@@ -48,7 +61,7 @@ export default function StudentPage() {
               </Link>
             </Button>
         </div>
-        {rank !== null && <StudentProfile student={student as Doc<"students">} rank={rank} isOwner={isOwner} />}
+        {rank !== null && <StudentProfile student={student} rank={rank} isOwner={isOwner} />}
       </main>
     </div>
   );

@@ -183,7 +183,7 @@ export function StudentProfile({ student, rank, isOwner }: StudentProfileProps) 
                  {(student.achievements && student.achievements.length > 0) ? (
                     <TooltipProvider>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {student.achievements.map((badge) => (
+                        {student.achievements.map((badge: BadgeType) => (
                           <Tooltip key={badge.id}>
                             <TooltipTrigger asChild>
                               <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 border hover:bg-muted transition-all duration-200 hover:scale-105 hover:shadow-md">

@@ -15,8 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from 'convex/_generated/api';
 
-
-const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2';
+// Configure which Clerk user can access the admin page via env var
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
 export default function AdminPage() {
   const { userId, isLoaded } = useAuth();
@@ -85,7 +85,6 @@ export default function AdminPage() {
                     {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
                     {isSeeding ? 'Seeding...' : 'Seed Database'}
                 </Button>
-                <AuthWidget />
             </div>
         </div>
         

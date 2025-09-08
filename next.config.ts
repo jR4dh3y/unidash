@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  serverExternalPackages: ["convex/server", "convex/values"],
   images: {
     remotePatterns: [
       {

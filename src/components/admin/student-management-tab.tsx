@@ -33,15 +33,16 @@ import { Label } from '../ui/label';
 
 interface StudentManagementTabProps {
     students: Student[];
+    isLoading?: boolean;
 }
 
 function AwardPointsDialog({ student }: { student: Student }) {
+    const awardPoints = useMutation(api.students.awardPoints);
     const [points, setPoints] = useState(0);
     const [reason, setReason] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const { toast } = useToast();
-    const awardPoints = useMutation(api.students.awardPoints);
 
     const handleAwardPoints = async () => {
         if (!points || !reason) {
@@ -55,7 +56,7 @@ function AwardPointsDialog({ student }: { student: Student }) {
 
         setIsSaving(true);
         try {
-            await awardPoints({ userId: student.userId, points: Number(points), reason });
+            await awardPoints({ id: student.id, points: Number(points), reason });
             toast({
                 title: 'Points Awarded!',
                 description: `${student.name} received ${points} points.`
@@ -125,7 +126,7 @@ function AwardPointsDialog({ student }: { student: Student }) {
     );
 }
 
-export function StudentManagementTab({ students }: StudentManagementTabProps) {
+export function StudentManagementTab({ students, isLoading = false }: StudentManagementTabProps) {
     
     return (
         <div className="mt-4">
@@ -135,6 +136,11 @@ export function StudentManagementTab({ students }: StudentManagementTabProps) {
                     <CardDescription>View and manage all registered students.</CardDescription>
                 </CardHeader>
                 <CardContent>
+                    {isLoading ? (
+                         <div className="flex justify-center items-center h-48">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                    ) : (
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -145,7 +151,7 @@ export function StudentManagementTab({ students }: StudentManagementTabProps) {
                         </TableHeader>
                         <TableBody>
                             {students.map((student) => (
-                                <TableRow key={student._id}>
+                                <TableRow key={student.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-4">
                                             <Avatar>
@@ -172,6 +178,7 @@ export function StudentManagementTab({ students }: StudentManagementTabProps) {
                             )}
                         </TableBody>
                     </Table>
+                    )}
                 </CardContent>
             </Card>
         </div>
