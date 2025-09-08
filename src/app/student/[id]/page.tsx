@@ -2,52 +2,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getStudentById, getAllStudents } from "@/lib/firebase-service";
+import { useQuery } from 'convex/react';
+import { api } from 'convex/_generated/api';
 import { notFound, useParams } from "next/navigation";
 import { StudentProfile } from "@/components/student-profile";
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/components/auth-provider";
-import type { Student } from '@/lib/types';
+import { useAuth } from "@clerk/nextjs";
+import type { Doc } from 'convex/_generated/dataModel';
 
 export default function StudentPage() {
-  const { user } = useAuth();
+  const { userId } = useAuth();
   const params = useParams();
   const studentId = params.id as string;
 
-  const [student, setStudent] = useState<Student | null>(null);
-  const [rank, setRank] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const student = useQuery(api.students.getStudentById, { id: studentId });
+  const allStudents = useQuery(api.students.getAllStudents);
 
-  useEffect(() => {
-    async function fetchData() {
-      if (!studentId) return;
-      try {
-        const studentData = await getStudentById(studentId);
-        if (!studentData) {
-          notFound();
-          return;
-        }
+  const rank = allStudents?.findIndex(s => s._id === student?._id) + 1;
 
-        const allStudents = await getAllStudents();
-        const studentRank = allStudents.findIndex(s => s.id === studentData.id) + 1;
-        
-        setStudent(studentData);
-        setRank(studentRank);
-
-      } catch (error) {
-        console.error("Failed to fetch student data:", error);
-        // Optionally, set an error state here to show an error message
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [studentId]);
-
-  if (loading) {
+  if (student === undefined || allStudents === undefined) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -60,7 +35,7 @@ export default function StudentPage() {
     return notFound();
   }
 
-  const isOwner = user?.uid === student.id;
+  const isOwner = userId === student.userId;
 
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-gray-900 dark:text-gray-100">
@@ -73,7 +48,7 @@ export default function StudentPage() {
               </Link>
             </Button>
         </div>
-        {rank !== null && <StudentProfile student={student} rank={rank} isOwner={isOwner} />}
+        {rank !== null && <StudentProfile student={student as Doc<"students">} rank={rank} isOwner={isOwner} />}
       </main>
     </div>
   );

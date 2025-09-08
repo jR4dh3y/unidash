@@ -7,72 +7,46 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShieldAlert, Loader2, Database } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/components/auth-provider';
+import { useAuth } from '@clerk/nextjs';
 import { EventManagementTab } from '@/components/admin/event-management-tab';
 import { StudentManagementTab } from '@/components/admin/student-management-tab';
-import { useEffect, useState } from 'react';
-import type { Student, AppEvent } from '@/lib/types';
-import { getAllStudents, getAllEvents, seedDatabase } from '@/lib/firebase-service';
+import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from 'convex/_generated/api';
 
 
-const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2'; 
+const ADMIN_UID = 'IMZ23UOOblMG1Dm6HDF4Hf7UOvK2';
 
 export default function AdminPage() {
-  const { user, loading } = useAuth();
-  const [students, setStudents] = useState<Student[]>([]);
-  const [events, setEvents] = useState<AppEvent[]>([]);
-  const [dataLoading, setDataLoading] = useState(true);
+  const { userId, isLoaded } = useAuth();
+  const students = useQuery(api.students.getAllStudents);
+  const events = useQuery(api.events.getAllEvents);
+  const seed = useMutation(api.students.seedDatabase);
   const [isSeeding, setIsSeeding] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    async function fetchData() {
-        if(user?.uid === ADMIN_UID) {
-            try {
-                setDataLoading(true);
-                const [studentData, eventData] = await Promise.all([
-                    getAllStudents(),
-                    getAllEvents()
-                ]);
-                setStudents(studentData);
-                setEvents(eventData);
-            } catch (error) {
-                console.error("Failed to fetch admin data:", error);
-            } finally {
-                setDataLoading(false);
-            }
-        }
-    }
-    if (!loading) {
-        fetchData();
-    }
-  }, [user, loading]);
 
   const handleSeedDatabase = async () => {
     setIsSeeding(true);
     try {
-        await seedDatabase();
-        toast({
-            title: "Database Seeded!",
-            description: "Temporary student data has been added to Firestore.",
-        });
-        // Re-fetch data to update the view
-        const studentData = await getAllStudents();
-        setStudents(studentData);
+      await seed();
+      toast({
+        title: 'Database Seeded!',
+        description: 'Temporary student data has been added to Convex.',
+      });
     } catch (error) {
-         toast({
-            variant: "destructive",
-            title: "Seeding Failed",
-            description: "There was an error seeding the database.",
-        });
+      toast({
+        variant: 'destructive',
+        title: 'Seeding Failed',
+        description: 'There was an error seeding the database.',
+      });
     } finally {
-        setIsSeeding(false);
+      setIsSeeding(false);
     }
   };
 
 
-  if (loading) {
+  if (!isLoaded || students === undefined || events === undefined) {
     return (
         <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -80,7 +54,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!user || user.uid !== ADMIN_UID) {
+  if (!userId || userId !== ADMIN_UID) {
     return (
         <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
             <Card className="w-full max-w-md mx-auto">
@@ -121,10 +95,10 @@ export default function AdminPage() {
                 <TabsTrigger value="students">Student Management</TabsTrigger>
             </TabsList>
             <TabsContent value="events">
-                <EventManagementTab events={events} isLoading={dataLoading} />
+                <EventManagementTab events={events} />
             </TabsContent>
             <TabsContent value="students">
-                <StudentManagementTab students={students} isLoading={dataLoading} />
+                <StudentManagementTab students={students} />
             </TabsContent>
         </Tabs>
 

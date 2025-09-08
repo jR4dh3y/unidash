@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { StuckButton } from '@/components/stuck-button';
 import { Providers } from '@/components/providers';
 import { Header } from '@/components/header';
+import { ConvexClientProvider } from './ConvexClientProvider';
 
 export const metadata: Metadata = {
   title: '1board',
@@ -25,14 +26,16 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <Providers>
-          <div className="relative flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <StuckButton />
-            <Toaster />
-          </div>
+          <ConvexClientProvider>
+            <div className="relative flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <StuckButton />
+              <Toaster />
+            </div>
+          </ConvexClientProvider>
         </Providers>
       </body>
     </html>

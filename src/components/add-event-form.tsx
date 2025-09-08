@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { addEvent } from "@/lib/firebase-service";
+import { useMutation } from 'convex/react';
+import { api } from 'convex/_generated/api';
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -41,6 +42,7 @@ const formSchema = z.object({
 
 export function AddEventForm() {
     const { toast } = useToast();
+    const addEvent = useMutation(api.events.addEvent);
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {

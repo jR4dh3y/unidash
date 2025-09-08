@@ -9,9 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Flame, Swords, History, Clock, Code, User, Trophy, Loader2 } from 'lucide-react';
-import type { Student } from '@/lib/types';
-import { getAllStudents } from '@/lib/firebase-service';
-import { useAuth } from '@/components/auth-provider';
+import { useQuery } from 'convex/react';
+import { api } from 'convex/_generated/api';
+import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 
 // Mock data for battle history
@@ -22,31 +22,13 @@ const mockHistory = [
 ];
 
 export default function BattlePage() {
-  const { user } = useAuth();
-  const [students, setStudents] = useState<Student[]>([]);
+  const { userId } = useAuth();
+  const allStudents = useQuery(api.students.getAllStudents);
   const [opponent, setOpponent] = useState<string>('');
   const [difficulty, setDifficulty] = useState<string>('');
-  const [loading, setLoading] = useState(true);
   const [isDuelActive, setIsDuelActive] = useState(false);
 
-  useEffect(() => {
-    async function fetchStudents() {
-      try {
-        const studentData = await getAllStudents();
-        // Filter out the current user from the list of opponents
-        if(user) {
-            setStudents(studentData.filter(s => s.id !== user.uid));
-        } else {
-            setStudents(studentData);
-        }
-      } catch (error) {
-        console.error("Failed to fetch students:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchStudents();
-  }, [user]);
+  const students = allStudents?.filter(s => s.userId !== userId);
 
   const handleStartDuel = () => {
       if(opponent && difficulty) {
@@ -54,7 +36,7 @@ export default function BattlePage() {
       }
   }
 
-  if (!user) {
+  if (!userId) {
     return (
         <div className="min-h-[calc(100vh-81px)] flex items-center justify-center">
             <Card className="w-full max-w-md mx-auto">
@@ -103,12 +85,12 @@ export default function BattlePage() {
                             <SelectValue placeholder="Select a student..." />
                         </SelectTrigger>
                         <SelectContent>
-                            {loading ? (
+                            {students === undefined ? (
                                 <div className="flex items-center justify-center p-2">
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                 </div>
                             ) : (
-                                students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
+                                students.map(s => <SelectItem key={s._id} value={s._id}>{s.name}</SelectItem>)
                             )}
                         </SelectContent>
                         </Select>
@@ -181,7 +163,7 @@ export default function BattlePage() {
                     </div>
                 </CardTitle>
                 <CardDescription>
-                    {isDuelActive ? `Solving a ${difficulty} problem against ${students.find(s => s.id === opponent)?.name}.` : "Start a new duel to begin."}
+                    {isDuelActive ? `Solving a ${difficulty} problem against ${students?.find(s => s._id === opponent)?.name}.` : "Start a new duel to begin."}
                 </CardDescription>
                 </CardHeader>
                 <CardContent>

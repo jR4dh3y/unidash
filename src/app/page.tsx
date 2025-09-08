@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { Leaderboard } from "@/components/leaderboard";
-import { getAllStudents, getUpcomingEvents } from "@/lib/firebase-service";
+import { useQuery } from 'convex/react';
+import { api } from 'convex/_generated/api';
 import type { Student, AppEvent, LeetCodeDailyProblem } from "@/lib/types";
 import { Calendar, MapPin, ExternalLink, Code, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,24 +16,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from '@/components/ui/skeleton';
 
 function UpcomingEvents() {
-  const [events, setEvents] = useState<AppEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const events = useQuery(api.events.getUpcomingEvents);
 
-  useEffect(() => {
-    async function fetchEvents() {
-      try {
-        const eventData = await getUpcomingEvents();
-        setEvents(eventData);
-      } catch (error) {
-        console.error("Failed to fetch events:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchEvents();
-  }, []);
-
-  if (loading) {
+  if (events === undefined) {
     return (
        <Card>
         <CardHeader>
@@ -206,24 +192,9 @@ function LeetCodeCard() {
 }
 
 function MainLeaderboard() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
+  const students = useQuery(api.students.getAllStudents);
 
-  useEffect(() => {
-    async function fetchStudents() {
-      try {
-        const studentData = await getAllStudents();
-        setStudents(studentData);
-      } catch (error) {
-        console.error("Failed to fetch students:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchStudents();
-  }, []);
-
-  if (loading) {
+  if (students === undefined) {
      return (
         <Card>
             <CardHeader>

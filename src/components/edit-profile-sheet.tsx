@@ -16,12 +16,13 @@ import {
   SheetClose
 } from "@/components/ui/sheet";
 import { Loader2 } from 'lucide-react';
-import type { Student } from '@/lib/types';
+import { Doc } from 'convex/_generated/dataModel';
 import { useToast } from '@/hooks/use-toast';
-import { updateStudentProfile } from '@/lib/firebase-service';
+import { useMutation } from 'convex/react';
+import { api } from 'convex/_generated/api';
 
 interface EditProfileSheetProps {
-    student: Student;
+    student: Doc<"students">;
     children: React.ReactNode;
 }
 
@@ -31,6 +32,7 @@ export function EditProfileSheet({ student, children }: EditProfileSheetProps) {
     const [linkedin, setLinkedin] = useState(student.linkedin || '');
     const [saving, setSaving] = useState(false);
     const { toast } = useToast();
+    const updateStudentProfile = useMutation(api.students.updateStudentProfile);
 
     const handleSaveChanges = async () => {
         setSaving(true);
@@ -39,7 +41,7 @@ export function EditProfileSheet({ student, children }: EditProfileSheetProps) {
             if (github) profileData.github = github;
             if (linkedin) profileData.linkedin = linkedin;
 
-            await updateStudentProfile(student.id, profileData);
+            await updateStudentProfile({ userId: student.userId, ...profileData });
             toast({
                 title: 'Success!',
                 description: 'Your profile has been updated.',

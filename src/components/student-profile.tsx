@@ -2,7 +2,8 @@
 
 'use client';
 
-import type { Student, Badge as BadgeType } from "@/lib/types";
+import type { Badge as BadgeType } from "@/lib/types";
+import { Doc } from "convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -25,12 +26,12 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "./ui/t
 
 
 interface StudentProfileProps {
-  student: Student;
+  student: Doc<"students">;
   rank: number;
   isOwner: boolean;
 }
 
-const sourceIcons: Record<Student['pointsLog'][number]['source'], React.ReactNode> = {
+const sourceIcons: Record<Doc<"students">['pointsLog'][number]['source'], React.ReactNode> = {
     'LeetCode': <Code className="h-4 w-4 text-muted-foreground" />,
     'Google Form': <FileText className="h-4 w-4 text-muted-foreground" />,
     'Manual Allocation': <UserCog className="h-4 w-4 text-muted-foreground" />,

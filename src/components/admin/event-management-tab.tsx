@@ -17,7 +17,8 @@ import { Loader2, Trash2 } from 'lucide-react';
 import type { AppEvent } from '@/lib/types';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { deleteEvent } from '@/lib/firebase-service';
+import { useMutation } from 'convex/react';
+import { api } from 'convex/_generated/api';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,15 +33,15 @@ import {
 
 interface EventManagementTabProps {
     events: AppEvent[];
-    isLoading: boolean;
 }
 
-export function EventManagementTab({ events, isLoading }: EventManagementTabProps) {
+export function EventManagementTab({ events }: EventManagementTabProps) {
     const { toast } = useToast();
+    const deleteEvent = useMutation(api.events.deleteEvent);
 
     const handleDelete = async (eventId: string) => {
         try {
-            await deleteEvent(eventId);
+            await deleteEvent({ id: eventId });
             toast({
                 title: 'Event Deleted',
                 description: 'The event has been successfully removed.',
@@ -66,11 +67,6 @@ export function EventManagementTab({ events, isLoading }: EventManagementTabProp
                         <CardDescription>View and manage all upcoming and past events.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {isLoading ? (
-                             <div className="flex justify-center items-center h-48">
-                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            </div>
-                        ) : (
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -82,7 +78,7 @@ export function EventManagementTab({ events, isLoading }: EventManagementTabProp
                             </TableHeader>
                             <TableBody>
                                 {events.map((event) => (
-                                    <TableRow key={event.id}>
+                                    <TableRow key={event._id}>
                                         <TableCell className="font-medium">{event.title}</TableCell>
                                         <TableCell>{format(new Date(event.date), "PPP")}</TableCell>
                                         <TableCell>
@@ -106,7 +102,7 @@ export function EventManagementTab({ events, isLoading }: EventManagementTabProp
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(event.id)} className="bg-destructive hover:bg-destructive/90">
+                                                    <AlertDialogAction onClick={() => handleDelete(event._id)} className="bg-destructive hover:bg-destructive/90">
                                                         Delete
                                                     </AlertDialogAction>
                                                     </AlertDialogFooter>
@@ -124,7 +120,6 @@ export function EventManagementTab({ events, isLoading }: EventManagementTabProp
                                 )}
                             </TableBody>
                         </Table>
-                        )}
                     </CardContent>
                 </Card>
             </div>

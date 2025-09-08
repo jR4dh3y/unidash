@@ -17,7 +17,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Award } from 'lucide-react';
 import type { Student } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { awardPoints } from '@/lib/firebase-service';
+import { useMutation } from 'convex/react';
+import { api } from 'convex/_generated/api';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +33,6 @@ import { Label } from '../ui/label';
 
 interface StudentManagementTabProps {
     students: Student[];
-    isLoading: boolean;
 }
 
 function AwardPointsDialog({ student }: { student: Student }) {
@@ -41,6 +41,7 @@ function AwardPointsDialog({ student }: { student: Student }) {
     const [isSaving, setIsSaving] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const { toast } = useToast();
+    const awardPoints = useMutation(api.students.awardPoints);
 
     const handleAwardPoints = async () => {
         if (!points || !reason) {
@@ -54,7 +55,7 @@ function AwardPointsDialog({ student }: { student: Student }) {
 
         setIsSaving(true);
         try {
-            await awardPoints(student.id, Number(points), reason);
+            await awardPoints({ userId: student.userId, points: Number(points), reason });
             toast({
                 title: 'Points Awarded!',
                 description: `${student.name} received ${points} points.`
@@ -124,7 +125,7 @@ function AwardPointsDialog({ student }: { student: Student }) {
     );
 }
 
-export function StudentManagementTab({ students, isLoading }: StudentManagementTabProps) {
+export function StudentManagementTab({ students }: StudentManagementTabProps) {
     
     return (
         <div className="mt-4">
@@ -134,11 +135,6 @@ export function StudentManagementTab({ students, isLoading }: StudentManagementT
                     <CardDescription>View and manage all registered students.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? (
-                         <div className="flex justify-center items-center h-48">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                    ) : (
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -149,7 +145,7 @@ export function StudentManagementTab({ students, isLoading }: StudentManagementT
                         </TableHeader>
                         <TableBody>
                             {students.map((student) => (
-                                <TableRow key={student.id}>
+                                <TableRow key={student._id}>
                                     <TableCell>
                                         <div className="flex items-center gap-4">
                                             <Avatar>
@@ -176,7 +172,6 @@ export function StudentManagementTab({ students, isLoading }: StudentManagementT
                             )}
                         </TableBody>
                     </Table>
-                    )}
                 </CardContent>
             </Card>
         </div>
