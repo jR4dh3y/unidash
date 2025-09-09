@@ -14,20 +14,41 @@ export function useEnsureStudent() {
   const { isSignedIn, isLoaded, user } = useUser();
   const ensureStudent = useMutation(api.students.ensureStudent);
   const lastEnsuredForUser = useRef<string | null>(null);
+  const retryTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!isLoaded) return;
     const id = user?.id ?? null;
 
-    if (isSignedIn && id && lastEnsuredForUser.current !== id) {
+    const attempt = () => {
+      if (!id) return;
       ensureStudent({
         userId: id,
         name: user?.fullName || user?.primaryEmailAddress?.emailAddress || 'User',
         avatar: user?.imageUrl || undefined,
-      }).catch(() => {
-        // silent: UI doesn't block on provisioning
-      });
-      lastEnsuredForUser.current = id;
+      })
+        .then(() => {
+          lastEnsuredForUser.current = id;
+        })
+        .catch(() => {
+          // Best-effort: if auth propagation lag occurs, retry once shortly
+          if (!retryTimer.current) {
+            retryTimer.current = setTimeout(() => {
+              retryTimer.current = null;
+              ensureStudent({
+                userId: id,
+                name: user?.fullName || user?.primaryEmailAddress?.emailAddress || 'User',
+                avatar: user?.imageUrl || undefined,
+              }).catch(() => {
+                /* swallow */
+              });
+            }, 500);
+          }
+        });
+    };
+
+    if (isSignedIn && id && lastEnsuredForUser.current !== id) {
+      attempt();
     }
 
     if (!isSignedIn) {

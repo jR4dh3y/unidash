@@ -8,3 +8,11 @@ declare module 'convex/server' {
 declare module 'convex/values' {
   export const v: any;
 }
+
+declare module '@convex-dev/auth/server' {
+  export const defineAuth: any;
+}
+
+declare module '@convex-dev/auth/clerk' {
+  export const clerk: any;
+}

@@ -83,7 +83,10 @@ export const getStudentById = query({
   args: { id: v.string() },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handler: async (ctx: any, { id }: any) => {
-    const doc = (await ctx.db.query("students").collect()).find((d: any) => d.userId === id);
+    const doc = await ctx.db
+      .query("students")
+      .withIndex("by_userId", (q: any) => q.eq("userId", id))
+      .unique();
     if (!doc) return null;
     return {
       id: doc.userId,
@@ -111,16 +114,22 @@ export const ensureStudent = mutation({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handler: async (ctx: any, args: { userId?: string; name?: string; avatar?: string }) => {
     const identity = await ctx.auth.getUserIdentity?.();
+    const isProd = process.env.NODE_ENV === "production";
 
-    // Prefer authenticated identity when present; fallback to provided args (useful in dev when JWT template isn't configured)
-    const userId = identity?.subject ?? args.userId;
-    const name = (identity?.name || identity?.email || args.name || "User").toString();
-    const avatar = (identity?.pictureUrl || (identity as any)?.picture || args.avatar || "https://i.pravatar.cc/150?img=11").toString();
-
+    // In production, require authenticated identity. In dev, allow fallback args for easier setup.
+    const userId = identity?.subject ?? (isProd ? undefined : args.userId);
     if (!userId) return false;
 
+    const name = (identity?.name || identity?.email || args.name || "User").toString();
+    const avatar = (
+      identity?.pictureUrl || (identity as any)?.picture || args.avatar || "https://i.pravatar.cc/150?img=11"
+    ).toString();
+
     // Look up existing student by userId (index exists in schema)
-    const existing = (await ctx.db.query("students").collect()).find((d: any) => d.userId === userId);
+    const existing = await ctx.db
+      .query("students")
+      .withIndex("by_userId", (q: any) => q.eq("userId", userId))
+      .unique();
 
     if (!existing) {
       const achievements = computeAchievements({ totalPoints: 0, pointsLog: [] });
@@ -153,7 +162,10 @@ export const updateStudentProfile = mutation({
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handler: async (ctx: any, { id, name, github, linkedin }: any) => {
-    const doc = (await ctx.db.query("students").collect()).find((d: any) => d.userId === id);
+    const doc = await ctx.db
+      .query("students")
+      .withIndex("by_userId", (q: any) => q.eq("userId", id))
+      .unique();
     if (!doc) return null;
     await ctx.db.patch(doc._id, { name, github, linkedin });
     return true;
@@ -164,7 +176,10 @@ export const awardPoints = mutation({
   args: { id: v.string(), points: v.number(), reason: v.string() },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handler: async (ctx: any, { id, points, reason }: any) => {
-    const doc = (await ctx.db.query("students").collect()).find((d: any) => d.userId === id);
+    const doc = await ctx.db
+      .query("students")
+      .withIndex("by_userId", (q: any) => q.eq("userId", id))
+      .unique();
     if (!doc) return null;
     const newLog = [
       ...((doc.pointsLog ?? []) as any[]),

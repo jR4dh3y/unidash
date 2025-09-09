@@ -6,6 +6,7 @@ import { ClerkProvider, useAuth as useClerkAuth } from "@clerk/nextjs";
 import { useEnsureStudent } from "@/hooks/use-ensure-student";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+const CLERK_JWT_TEMPLATE = process.env.NEXT_PUBLIC_CLERK_JWT_TEMPLATE || "convex";
 
 export function ConvexClientProvider({
   children,
@@ -17,13 +18,13 @@ export function ConvexClientProvider({
     const auth = useClerkAuth();
     return {
       ...auth,
-      getToken: async (options?: Parameters<typeof auth.getToken>[0]) => {
+    getToken: async (options?: Parameters<typeof auth.getToken>[0]) => {
         try {
-          return await auth.getToken({ template: "convex", ...(options || {}) });
+      return await auth.getToken({ template: CLERK_JWT_TEMPLATE, ...(options || {}) });
         } catch (err) {
           if (process.env.NODE_ENV !== "production") {
             console.warn(
-              "Clerk JWT template 'convex' not found. Proceeding without auth token. Configure it in Clerk → JWT Templates."
+        `Clerk JWT template '${CLERK_JWT_TEMPLATE}' not found. Proceeding without auth token. Configure it in Clerk → JWT Templates.`
             );
           }
           return null;
