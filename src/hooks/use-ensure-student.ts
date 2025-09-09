@@ -20,7 +20,11 @@ export function useEnsureStudent() {
     const id = user?.id ?? null;
 
     if (isSignedIn && id && lastEnsuredForUser.current !== id) {
-      ensureStudent({}).catch(() => {
+      ensureStudent({
+        userId: id,
+        name: user?.fullName || user?.primaryEmailAddress?.emailAddress || 'User',
+        avatar: user?.imageUrl || undefined,
+      }).catch(() => {
         // silent: UI doesn't block on provisioning
       });
       lastEnsuredForUser.current = id;

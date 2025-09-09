@@ -103,16 +103,21 @@ export const getStudentById = query({
 
 // Create the student document on first login and keep name/avatar in sync thereafter.
 export const ensureStudent = mutation({
-  args: {},
+  args: {
+    userId: v.optional(v.string()),
+    name: v.optional(v.string()),
+    avatar: v.optional(v.string()),
+  },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: async (ctx: any) => {
+  handler: async (ctx: any, args: { userId?: string; name?: string; avatar?: string }) => {
     const identity = await ctx.auth.getUserIdentity?.();
-    if (!identity) return false;
 
-    const userId = identity.subject;
-    // Prefer Clerk-provided name/picture when available
-    const name = (identity.name || identity.email || "User").toString();
-    const avatar = (identity.pictureUrl || identity.picture || "https://i.pravatar.cc/150?img=11").toString();
+    // Prefer authenticated identity when present; fallback to provided args (useful in dev when JWT template isn't configured)
+    const userId = identity?.subject ?? args.userId;
+    const name = (identity?.name || identity?.email || args.name || "User").toString();
+    const avatar = (identity?.pictureUrl || (identity as any)?.picture || args.avatar || "https://i.pravatar.cc/150?img=11").toString();
+
+    if (!userId) return false;
 
     // Look up existing student by userId (index exists in schema)
     const existing = (await ctx.db.query("students").collect()).find((d: any) => d.userId === userId);

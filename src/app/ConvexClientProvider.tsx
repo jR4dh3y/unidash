@@ -12,8 +12,6 @@ export function ConvexClientProvider({
 }: {
   children: React.ReactNode;
 }) {
-  // Ensure a student record exists after Clerk sign-in
-  useEnsureStudent();
   // jwt templet messing for clerk 
   const useAuth = () => {
     const auth = useClerkAuth();
@@ -36,8 +34,14 @@ export function ConvexClientProvider({
   return (
     <ClerkProvider>
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-        {children}
+        {/* Ensure student provisioning runs inside both providers */}
+        <EnsureStudent>{children}</EnsureStudent>
       </ConvexProviderWithClerk>
     </ClerkProvider>
   );
+}
+
+function EnsureStudent({ children }: { children: React.ReactNode }) {
+  useEnsureStudent();
+  return <>{children}</>;
 }
