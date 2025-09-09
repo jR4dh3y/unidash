@@ -101,6 +101,44 @@ export const getStudentById = query({
   },
 });
 
+// Create the student document on first login and keep name/avatar in sync thereafter.
+export const ensureStudent = mutation({
+  args: {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: async (ctx: any) => {
+    const identity = await ctx.auth.getUserIdentity?.();
+    if (!identity) return false;
+
+    const userId = identity.subject;
+    // Prefer Clerk-provided name/picture when available
+    const name = (identity.name || identity.email || "User").toString();
+    const avatar = (identity.pictureUrl || identity.picture || "https://i.pravatar.cc/150?img=11").toString();
+
+    // Look up existing student by userId (index exists in schema)
+    const existing = (await ctx.db.query("students").collect()).find((d: any) => d.userId === userId);
+
+    if (!existing) {
+      const achievements = computeAchievements({ totalPoints: 0, pointsLog: [] });
+      await ctx.db.insert("students", {
+        userId,
+        name,
+        avatar,
+        totalPoints: 0,
+        pointsLog: [],
+        achievements,
+      });
+      return true;
+    }
+
+    // If exists, patch name/avatar if changed; keep other fields intact
+    const shouldPatch = existing.name !== name || existing.avatar !== avatar;
+    if (shouldPatch) {
+      await ctx.db.patch(existing._id, { name, avatar });
+    }
+    return true;
+  },
+});
+
 export const updateStudentProfile = mutation({
   args: {
     id: v.string(),

@@ -3,6 +3,7 @@
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ClerkProvider, useAuth as useClerkAuth } from "@clerk/nextjs";
+import { useEnsureStudent } from "@/hooks/use-ensure-student";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -11,6 +12,8 @@ export function ConvexClientProvider({
 }: {
   children: React.ReactNode;
 }) {
+  // Ensure a student record exists after Clerk sign-in
+  useEnsureStudent();
   // jwt templet messing for clerk 
   const useAuth = () => {
     const auth = useClerkAuth();
